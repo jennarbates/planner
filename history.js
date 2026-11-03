@@ -315,10 +315,8 @@ function barChart({ id, kind, title, sub, values, tip }) {
     grid.push(`<line class="${v === 0 ? "base" : "grid"}" x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}"/>
       <text x="${L - 5}" y="${y(v) + 3.5}" text-anchor="end">${v}</text>`);
   }
-  const hi = values.reduce((a, b) => (b.value > a.value ? b : a), values[0]);
   const barId = term => `bar:${kind}:${term}`;
   const selected = values.find(v => state.stat === barId(v.term));
-  const labelled = new Set([values[0].term, values[values.length - 1].term, hi.term, selected?.term]);
   const cols = values.map((v, i) => {
     const x = L + band * i + (band - bw) / 2;
     const yy = y(v.value), base = y(0), r = Math.min(4, Math.max(0, base - yy));
@@ -327,7 +325,7 @@ function barChart({ id, kind, title, sub, values, tip }) {
     return `<g class="col ${inRange(v.term) ? "" : "out"} ${v === selected ? "sel" : ""}" tabindex="0" role="button" aria-pressed="${v === selected}" data-bar="${barId(v.term)}" data-tip="${esc(tip(v))}" aria-label="${esc(tip(v))}">
       <rect class="hit" x="${L + band * i}" y="${T - 12}" width="${band}" height="${H - T - B + 12}"/>
       ${path ? `<path class="bar" d="${path}"/>` : ""}
-      ${labelled.has(v.term) ? `<text class="val" x="${x + bw / 2}" y="${yy - 4}" text-anchor="middle">${v.value}</text>` : ""}
+      <text class="val" x="${x + bw / 2}" y="${yy - 4}" text-anchor="middle">${v.value}</text>
       <text x="${x + bw / 2}" y="${H - 6}" text-anchor="middle">${v.term}</text>
     </g>`;
   }).join("");
