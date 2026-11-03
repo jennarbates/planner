@@ -19,10 +19,33 @@ Some caveats:
 - CICS reused the file addresses of the Fall 2025 description and schedule PDFs for Spring 2027, so those two terms' files come from its Fall 2025 web pages instead.
 - Fall 2022 uses the May 2022 PDF. CICS regenerated that document in January 2024 with later course numbers and wording, so the 2024 copy only supplies two seminars the May copy lacks.
 - A prerequisite counts as changed when the courses or minimum grades named in SPIRE differ (the catalog text where SPIRE has no entry), or when CICS lists the change. Anything else is treated as wording.
+- Numbers after "previously" in a prerequisite count as old numbers, not requirements. COMPSCI 564 is handled by hand (`RUN_ON_PREVIOUSLY` in the script), because its wording runs separate courses into that list.
 - Renumbered courses are merged when CICS lists the change, on either its New Course Numbers or its changes page. Four pairs missing from those lists are merged by hand (`SAME_COURSE` in the script), with the reason shown on the page: three because SPIRE's notes give the previous number, and one because its title and description match. A reused topic number with an unrelated title and description becomes a separate row.
 - Courses whose latest number has a letter (`COMPSCI 590X`, `COMPSCI 198C`) are treated as experimental and kept out of the numbers unless chosen under **Category**. A course that later got a plain number counts as regular for all of its terms.
 - Each change has a short summary generated from the documents' own text: it quotes what was added or removed, and states who gained or lost access only when the wording makes that clear.
 - Honors colloquia are left out, as they are in `catalog.js`.
+
+## Data reliability page
+
+`verify.html` lets course staff see where the data comes from and how far to trust it. It shows what was checked and how each check came out, what to keep in mind, and every course term by term with links to the page of the original document. It's read-only.
+
+`verify-data.js` holds where each course is in each document and the results of comparing the site's text with those documents. Rebuild it after `pdfs/` or `history-data.js` change:
+
+```
+python3 -I tools/build_verify.py > verify-data.js
+```
+
+## Publishing
+
+The public site is https://jennarbates.github.io/planner/. GitHub Pages serves the `main` branch as it is, including `pdfs/`, so merging to `main` publishes a change.
+
+There's also a private claude.ai copy. To update it, rebuild the data if needed, then build a copy and publish that copy to the same link, with `index.html` as the page and the other files alongside it:
+
+```
+python3 -I tools/build_site.py . <folder outside this project>
+```
+
+The output folder is deleted and rebuilt each time, so use one only for this. The copy links to the original documents, because `pdfs/` isn't in it, and works around what the viewer blocks, such as downloads and `confirm()`. The top of `tools/build_site.py` lists the differences.
 
 ## Course planner
 

@@ -1,0 +1,64 @@
+/* Data reliability page. Tokens come from style.css and shared pieces from history.css. */
+
+#v-page { max-width: 980px; padding: 0 18px 40px; }
+#v-page > section { padding-top: 22px; }
+#v-page h2 { margin: 0 0 4px; font-size: 16px; }
+#v-page a { color: var(--accent); text-decoration: none; }
+#v-page a:hover { text-decoration: underline; }
+.v-intro { margin: 0 0 10px; max-width: 75ch; color: var(--muted); font-size: 13px; line-height: 1.45; }
+
+/* Checks */
+
+#v-checks { list-style: none; margin: 0; padding: 0; background: var(--panel); border: 1px solid var(--border); border-radius: 7px; }
+.v-check { display: grid; grid-template-columns: 20px minmax(0, 1fr) auto; gap: 2px 8px; padding: 10px 14px; border-top: 1px solid var(--grid); line-height: 1.45; }
+.v-check:first-child { border-top: none; }
+.v-check .mark { font-weight: 700; text-align: center; }
+.v-check .mark.ok { color: var(--ok); }
+.v-check .mark.partial { color: var(--warn); }
+.v-check b { font-weight: 600; }
+.v-check .score { font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.v-check p { grid-column: 2 / -1; margin: 0; color: var(--muted); font-size: 12.5px; max-width: 75ch; }
+
+/* Notes */
+
+.v-note { margin-top: 6px; background: var(--panel); border: 1px solid var(--border); border-radius: 7px; }
+.v-note > summary { padding: 9px 14px; cursor: pointer; font-size: 13px; line-height: 1.4; }
+.v-note > summary b { font-weight: 600; }
+.v-note > summary .muted { margin-left: 4px; }
+.v-note-body { padding: 0 14px 12px; font-size: 12.5px; line-height: 1.5; }
+.v-note-body > p { margin: 0 0 8px; color: var(--muted); max-width: 75ch; }
+.v-note-body ul { margin: 0; padding-left: 18px; }
+.v-note-body li + li { margin-top: 3px; }
+.v-table-wrap { overflow-x: auto; }
+.v-note-body table { border-collapse: collapse; font-variant-numeric: tabular-nums; }
+.v-note-body th, .v-note-body td { padding: 3px 18px 3px 0; border-bottom: 1px solid var(--grid); text-align: left; font-weight: 400; white-space: nowrap; }
+.v-note-body thead th { color: var(--muted); font-size: 12px; }
+
+/* Courses */
+
+#v-search-label { max-width: 360px; margin-bottom: 6px; }
+#v-count { margin: 0 0 8px; font-size: 12.5px; }
+#v-courses { background: var(--panel); border: 1px solid var(--border); border-radius: 7px; }
+.v-course { border-top: 1px solid var(--grid); }
+.v-course:first-child { border-top: none; }
+.v-course > summary { display: grid; grid-template-columns: 118px minmax(0, 1fr) auto; gap: 2px 10px; padding: 7px 14px; cursor: pointer; font-size: 13px; line-height: 1.4; list-style-position: inside; }
+.v-course > summary b { font-weight: 600; white-space: nowrap; }
+.v-course > summary .terms { color: var(--muted); font-size: 12px; white-space: nowrap; }
+.v-course > summary:hover { background: var(--bg); }
+.v-course[open] > summary { background: var(--accent-soft); }
+.v-course-body { padding: 4px 14px 14px; }
+.v-course-links { margin: 6px 0 0; font-size: 12.5px; }
+.v-planner { margin-top: 10px; padding: 7px 10px; background: var(--bg); border-radius: 5px; font-size: 12.5px; line-height: 1.45; }
+.v-planner b { font-weight: 600; }
+.v-term { margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--grid); }
+.v-term-head { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 2px 12px; font-size: 13px; }
+.v-term-head b { font-weight: 600; }
+.v-term-head .v-sources { font-size: 12px; }
+.v-term h4 { margin: 8px 0 1px; color: var(--muted); font-size: 12px; font-weight: 600; }
+.v-term .v-facts { margin: 2px 0 0; color: var(--muted); font-size: 12.5px; }
+
+@media (max-width: 760px) {
+  #v-page { padding: 0 16px 32px; }
+  .v-course > summary { grid-template-columns: minmax(0, 1fr) auto; }
+  .v-course > summary .title { grid-column: 1 / -1; grid-row: 2; }
+}
