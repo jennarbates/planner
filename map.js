@@ -14,8 +14,6 @@ const esc = s => String(s ?? "").replace(/[&<>"']/g, c => `&#${c.charCodeAt(0)};
 const plural = (n, word) => `${n} ${word}${n === 1 ? "" : "s"}`;
 const isExperimental = c => /\d[A-Z]/.test(c.id);
 
-const DEFAULT_COURSE = "COMPSCI 311";
-
 const state = {
   term: TERM_IDS.length - 1,
   base: TERM_IDS[0],
@@ -23,7 +21,7 @@ const state = {
   scope: "core",
   exp: "connected",
   out: "mathstat",
-  selected: DEFAULT_COURSE,
+  selected: null,
   lastCourse: null,
   list: null,
 };
@@ -33,6 +31,20 @@ let playTimer = null;
 
 const label = key => BY_KEY.get(key)?.id ?? key;
 const title = key => BY_KEY.get(key)?.title ?? "";
+
+// What a course with no listing was, where the CICS documents don't say. Added by hand.
+const UNLISTED_NOTES = {
+  "COMPSCI 473": {
+    short: "373 with an extra project",
+    full: "An optional version of COMPSCI 373: students could take 373, or do an extra project and take 473.",
+  },
+};
+
+// A CICS number with no row here was named in a prerequisite but isn't in any listing we have.
+const isCicsCode = code => /^(CICS|COMPSCI|INFO) /.test(code);
+const unlistedTitle = code => UNLISTED_NOTES[code]?.short ?? (isCicsCode(code) ? `Not listed since ${TERM_LABEL[TERM_IDS[0]]}` : "Outside CICS listings");
+const unlistedHead = codes => (codes.some(isCicsCode) ? "Not in CICS listings" : "Other departments");
+const unlistedLine = code => (UNLISTED_NOTES[code] ? `${code}. ${UNLISTED_NOTES[code].full}` : code);
 
 // The core view is the undergraduate courses that at least this many regular courses,
 // at any level, have named.
@@ -253,7 +265,8 @@ function renderCourseBoard() {
   const { prereqs, outside, leads } = courseConnections(key);
   const leadCols = leads.length > 8 ? 2 : 1;
   const leadRows = Math.ceil(leads.length / leadCols);
-  const outsideLines = Math.ceil(outside.join ? outside.map(o => o.key).join(", ").length / 26 : 0);
+  const outsideText = outside.map(o => unlistedLine(o.key)).join(", ");
+  const outsideLines = Math.ceil(outsideText.length / 26);
   const outsideH = outside.length ? 30 + outsideLines * 15 : 0;
   const leftH = prereqs.length * (H + GAP) + (outside.length ? outsideH + GAP : 0);
   const rightH = leadRows * (H + GAP);
@@ -286,7 +299,7 @@ function renderCourseBoard() {
   }
   if (outside.length) {
     parts.push(`<div class="m-node big ext" style="left:${PAD_X}px;top:${y}px;width:${W}px;height:${outsideH}px">
-      <span class="code">Other departments</span><span class="wrap">${esc(outside.map(o => o.key).join(", "))}</span></div>`);
+      <span class="code">${unlistedHead(outside.map(o => o.key))}</span><span class="wrap">${esc(outsideText)}</span></div>`);
     paths.push(curve(PAD_X + W, y + outsideH / 2, midX, midY + H / 2, "same"));
   }
   leads.forEach((l, n) => {
@@ -328,7 +341,8 @@ function renderBoard(edges) {
   board.style.width = `${layout.width}px`;
   board.style.height = `${layout.height}px`;
 
-  const heads = layout.used.map((lvl, col) => `<span style="left:${PAD_X + col * COL_W}px">${lvl === 0 ? "Other departments" : lvl === 700 ? "700+" : `${lvl} level`}</span>`).join("");
+  const unlisted = [...layout.points.keys()].filter(k => !BY_KEY.has(k));
+  const heads = layout.used.map((lvl, col) => `<span style="left:${PAD_X + col * COL_W}px">${lvl === 0 ? unlistedHead(unlisted) : lvl === 700 ? "700+" : `${lvl} level`}</span>`).join("");
   const paths = edges.map(e => {
     const inChain = chain && chain.has(e.from) && chain.has(e.to);
     const touches = chain && (e.from === state.selected || e.to === state.selected);
@@ -346,10 +360,10 @@ function renderBoard(edges) {
       chain?.has(k) ? "chain" : "",
       k === state.selected ? "selected" : "",
     ].join(" ");
-    const name = c ? `${c.id}: ${c.title}` : k;
+    const name = c ? `${c.id}: ${c.title}` : unlistedLine(k);
     return `<div class="m-node ${cls}" data-key="${esc(k)}" style="left:${p.x}px;top:${p.y}px;width:${NODE_W}px;height:${NODE_H}px"
       ${c ? `tabindex="0" role="button" aria-pressed="${k === state.selected}"` : ""} title="${esc(name)}">
-      <span class="code">${esc(label(k))}</span><span class="title">${c ? esc(c.title) : "Outside CICS listings"}</span></div>`;
+      <span class="code">${esc(label(k))}</span><span class="title">${esc(c ? c.title : unlistedTitle(k))}</span></div>`;
   }).join("");
   board.innerHTML = `<div class="m-heads" style="width:${layout.width}px">${heads}</div>
     <svg width="${layout.width}" height="${layout.height}" aria-hidden="true">
@@ -472,6 +486,10 @@ function renderSelected(edges) {
 function renderLegend() {
   const compare = baseIndex() !== null;
   if (state.view === "course") {
+    if (!BY_KEY.has(state.selected)) {
+      $("#m-legend").innerHTML = "";
+      return;
+    }
     const b = baseIndex();
     $("#m-legend").innerHTML = `<span>Click any course to move to it. An arrow may be a requirement or one option of several, so check the wording above.</span>
       ${compare ? `<span class="key"><span class="ln added"></span>Added since ${esc(TERM_LABEL[TERM_IDS[b]])}</span><span class="key"><span class="ln dropped"></span>Dropped since ${esc(TERM_LABEL[TERM_IDS[b]])}</span>` : ""}
@@ -482,7 +500,7 @@ function renderLegend() {
     <span class="key"><span class="ln"></span>${compare ? "In both terms" : "Connection"}</span>
     ${compare ? `<span class="key"><span class="ln added"></span>Added</span><span class="key"><span class="ln dropped"></span>Dropped</span>` : ""}
     <span class="key"><span class="bx exp"></span>Experimental</span>
-    <span class="key"><span class="bx ext"></span>Outside CICS listings</span>
+    <span class="key"><span class="bx ext"></span>Not in CICS listings</span>
     <span>Click a course to light up its chain. Click it again to clear it.</span>`;
 }
 
@@ -660,8 +678,8 @@ function applyHash() {
   const raw = decodeURIComponent(location.hash.slice(1));
   if (!raw) {
     // Back to where the page started.
-    if (state.view === "course" && state.selected !== DEFAULT_COURSE) {
-      state.selected = DEFAULT_COURSE;
+    if (state.view === "course" && state.selected) {
+      state.selected = null;
       render();
     }
     return;
@@ -710,7 +728,7 @@ $("#m-view").addEventListener("click", e => {
   const b = e.target.closest("[data-view]");
   if (!b) return;
   state.view = b.dataset.view;
-  if (state.view === "course" && !state.selected) state.selected = state.lastCourse ?? DEFAULT_COURSE;
+  if (state.view === "course" && !state.selected) state.selected = state.lastCourse;
   render();
 });
 
