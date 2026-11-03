@@ -573,7 +573,7 @@ window.CATALOG = [
   "title": "Cyber Effects: Reverse Engineering, Exploit Analysis, and Capability Development",
   "credits": 3,
   "offered": "S",
-  "prereq": "COMPSCI 230 & (COMPSCI 360 | COMPSCI 365 | COMPSCI 466)",
+  "prereq": "COMPSCI 230 & (COMPSCI 360 | COMPSCI 365 | COMPSCI 367 | COMPSCI 466)",
   "notes": "Prerequisite: COMPSCI 230 (or E&C-ENG 322) and COMPSCI 360 (previously COMPSCI 460 or COMPSCI 365 or COMPSCI 390R or COMPSCI 466 or E&C-ENG 371), all with a grade of C or better."
  },
  {

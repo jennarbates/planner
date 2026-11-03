@@ -24,6 +24,7 @@ const state = {
   exp: "connected",
   out: "mathstat",
   selected: DEFAULT_COURSE,
+  lastCourse: null,
   list: null,
 };
 
@@ -306,7 +307,7 @@ function renderCourseBoard() {
     </div>
     <svg width="${width}" height="${TOP + height + 16}" aria-hidden="true">${ARROW_DEFS}${paths.join("")}</svg>
     ${parts.join("")}
-    <div class="m-node big current ${isExperimental(c) ? "exp" : ""}" style="left:${center.x}px;top:${center.y}px;width:${W}px;height:${H}px" title="${esc(c.id)}: ${esc(c.title)}">
+    <div class="m-node big current ${isExperimental(c) ? "exp" : ""}" data-key="${esc(key)}" tabindex="0" role="button" aria-pressed="true" style="left:${center.x}px;top:${center.y}px;width:${W}px;height:${H}px" title="Clear ${esc(c.id)} and show the whole map">
       <span class="code">${esc(c.id)}</span><span class="title">${esc(c.title)}</span></div>`;
 }
 
@@ -472,7 +473,7 @@ function renderLegend() {
   const compare = baseIndex() !== null;
   if (state.view === "course") {
     const b = baseIndex();
-    $("#m-legend").innerHTML = `<span>Click any course to move to it. It may be a requirement or one option of several, so check the wording above.</span>
+    $("#m-legend").innerHTML = `<span>Click any course to move to it, or the one in the middle to see the whole map. An arrow may be a requirement or one option of several, so check the wording above.</span>
       ${compare ? `<span class="key"><span class="ln added"></span>Added since ${esc(TERM_LABEL[TERM_IDS[b]])}</span><span class="key"><span class="ln dropped"></span>Dropped since ${esc(TERM_LABEL[TERM_IDS[b]])}</span>` : ""}
       <span class="key"><span class="bx exp"></span>Experimental</span>`;
     return;
@@ -482,7 +483,7 @@ function renderLegend() {
     ${compare ? `<span class="key"><span class="ln added"></span>Added</span><span class="key"><span class="ln dropped"></span>Dropped</span>` : ""}
     <span class="key"><span class="bx exp"></span>Experimental</span>
     <span class="key"><span class="bx ext"></span>Outside CICS listings</span>
-    <span>Click a course to light up its chain. Click it again to open its history.</span>`;
+    <span>Click a course to light up its chain. Click it again to clear it.</span>`;
 }
 
 function renderControls() {
@@ -622,12 +623,17 @@ $("#m-selected").addEventListener("click", e => {
 function activateNode(node) {
   const key = node.dataset.key;
   if (!BY_KEY.has(key)) return;
-  if (state.view === "course") {
+  // Clicking the focused course again lets go of it and shows the whole map.
+  if (state.selected === key) {
+    state.lastCourse = key;
+    state.view = "all";
+    selectNode(null);
+  } else if (state.view === "course") {
     goToCourse(key);
     return;
+  } else {
+    selectNode(key);
   }
-  if (state.selected === key) location.href = `index.html#${encodeURIComponent(key)}`;
-  else selectNode(key);
   $(`#m-board .m-node[data-key="${CSS.escape(key)}"]`)?.focus({ preventScroll: true });
 }
 $("#m-board").addEventListener("click", e => {
@@ -704,6 +710,7 @@ $("#m-view").addEventListener("click", e => {
   const b = e.target.closest("[data-view]");
   if (!b) return;
   state.view = b.dataset.view;
+  if (state.view === "course" && !state.selected) state.selected = state.lastCourse ?? DEFAULT_COURSE;
   render();
 });
 

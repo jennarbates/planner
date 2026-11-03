@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Data Reliability</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="history.css">
+  <link rel="stylesheet" href="verify.css">
+</head>
+<body class="history verify">
+  <header id="h-head">
+    <div>
+      <h1>Where this data comes from</h1>
+      <p id="h-sub" class="muted"></p>
+    </div>
+    <nav class="h-nav">
+      <a href="index.html">← Course history</a>
+      <a href="map.html">Prerequisite map</a>
+      <a href="planner.html">Course planner</a>
+    </nav>
+  </header>
+
+  <section id="h-stats" aria-label="What the data covers"></section>
+
+  <main id="v-page">
+    <section>
+      <h2>What was checked</h2>
+      <p class="v-intro">These checks run against the saved CICS documents. They show the data was read correctly from those documents, not that the documents themselves are right.</p>
+      <ul id="v-checks"></ul>
+    </section>
+
+    <section>
+      <h2>What to keep in mind</h2>
+      <div id="v-notes"></div>
+    </section>
+
+    <section id="v-browse">
+      <h2>Look through the data</h2>
+      <p class="v-intro">Open any course to see what the site has for each term, with links to the page of the original document it came from.</p>
+      <label id="v-search-label">Search <input id="v-search" type="search" placeholder="Code, title or former number…"></label>
+      <p id="v-count" class="muted" aria-live="polite"></p>
+      <div id="v-courses"></div>
+    </section>
+  </main>
+
+  <script src="history-data.js"></script>
+  <script src="catalog.js"></script>
+  <script src="verify-data.js"></script>
+  <script src="verify.js"></script>
+</body>
+</html>

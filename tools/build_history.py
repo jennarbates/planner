@@ -39,6 +39,9 @@ SAME_COURSE = [
 # Another department's renumbering, so that its old and new numbers are one course on the map.
 SAME_NUMBER = {"STATISTC 515": "STATISTC 315"}
 OTHER_SUBJECTS = r"MATH|STATISTC|STATISTCS|STAT|PHYSICS|E&C-ENG|ECE|ENGLWRIT|LINGUIST|PSYCH|OIM|RES-ECON|SOCIOL"
+# COMPSCI 564 says "COMPSCI 360 (previously COMPSCI 460 or COMPSCI 365 or ...)", but only 460 is
+# 360's old number: the rest are separate courses, as the planner and SPIRE's later listing show.
+RUN_ON_PREVIOUSLY = ("PREVIOUSLY COMPSCI 460 OR ", "PREVIOUSLY COMPSCI 460) OR (")
 
 REWRITE_BELOW = 0.6  # description word similarity below this counts as a rewrite
 UNRELATED_BELOW = 0.3  # same number, different title and this dissimilar: a different course
@@ -326,9 +329,14 @@ def requirement_key(pre):
     return codes, grades
 
 
+def history_marked(text):
+    """A prerequisite in capitals, with "previously" ending where its list of old numbers does."""
+    return text.upper().replace(*RUN_ON_PREVIOUSLY)
+
+
 def renamed_courses(text):
     """(new number, its old numbers) for each "X (previously Y)" in a prerequisite."""
-    upper = text.upper()
+    upper = history_marked(text)
     out = []
     for m in re.finditer(r"PREVIOUSLY ([^)\]]*)", upper):
         olds = requirement_key(m[1])[0]
@@ -341,7 +349,7 @@ def renamed_courses(text):
 
 def named_courses(text):
     """Courses a prerequisite actually names, leaving out numbers it only gives as history."""
-    current = re.sub(r"[,;]?\s*PREVIOUSLY [^)\]]*", "", text.upper())
+    current = re.sub(r"[,;]?\s*PREVIOUSLY [^)\]]*", "", history_marked(text))
     return {SAME_NUMBER.get(c, c) for c in requirement_key(current)[0]}
 
 
@@ -471,7 +479,7 @@ def name_list(codes, limit=4):
 
 def former_numbers(text):
     found = set()
-    for inner in re.findall(r"PREVIOUSLY ([^)\]]*)", text.upper()):
+    for inner in re.findall(r"PREVIOUSLY ([^)\]]*)", history_marked(text)):
         found |= requirement_key(inner)[0]
     return found
 
@@ -763,4 +771,5 @@ def main():
     print("window.HISTORY = " + json.dumps(data, separators=(",", ":"), ensure_ascii=False) + ";")
 
 
-main()
+if __name__ == "__main__":
+    main()
