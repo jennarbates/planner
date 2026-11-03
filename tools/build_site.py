@@ -109,7 +109,7 @@ for name in FILES:
     if name == "history-data.js":
         urls = source_urls()
         data = json.loads(text.split("=", 1)[1].rstrip().rstrip(";"))
-        used = {f for t in data["terms"] for f in t["files"].values() if f} | {"F22-descriptions-2024-01-regenerated.pdf"}
+        used = {f for t in data["terms"] for f in t["files"].values() if f} | {"F22-descriptions-2024-01-regenerated.pdf", "new-course-numbers.html", "course-changes.html"}
         missing = sorted(used - set(urls))
         if missing:
             raise SystemExit(f"no source address for {missing}")

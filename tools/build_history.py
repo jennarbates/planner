@@ -37,11 +37,16 @@ SAME_COURSE = [
     ("COMPSCI 590T", "COMPSCI 515", "F23", FROM_NOTES),
 ]
 # Another department's renumbering, so that its old and new numbers are one course on the map.
-SAME_NUMBER = {"STATISTC 515": "STATISTC 315"}
+SAME_NUMBER = {"STATISTC 515": "STATISTC 315", "LINGUIST 492B": "LINGUIST 429B"}
 OTHER_SUBJECTS = r"MATH|STATISTC|STATISTCS|STAT|PHYSICS|E&C-ENG|ECE|ENGLWRIT|LINGUIST|PSYCH|OIM|RES-ECON|SOCIOL"
-# COMPSCI 564 says "COMPSCI 360 (previously COMPSCI 460 or COMPSCI 365 or ...)", but only 460 is
-# 360's old number: the rest are separate courses, as the planner and SPIRE's later listing show.
-RUN_ON_PREVIOUSLY = ("PREVIOUSLY COMPSCI 460 OR ", "PREVIOUSLY COMPSCI 460) OR (")
+# Lists after "previously" that run on into courses that aren't old numbers. COMPSCI 564 says
+# "COMPSCI 360 (previously COMPSCI 460 or COMPSCI 365 or ...)", but only 460 is 360's old number:
+# the rest are separate courses, as the planner and SPIRE's later listing show. "CICS 160
+# (previously ... or CICS 210)" is CICS's approved change to accept CICS 210, a later course.
+RUN_ON_PREVIOUSLY = [("PREVIOUSLY COMPSCI 460 OR ", "PREVIOUSLY COMPSCI 460) OR ("), (" OR CICS 210)", ") OR CICS 210")]
+# Sentences that name a course without requiring it: INFO 150 points CS majors elsewhere
+# ("should see COMPSCI 240 and 250"), and COMPSCI 677 says 377 is "helpful but not required".
+NOT_REQUIRED = r"STUDENTS INTERESTED IN [^.]*SHOULD SEE [^.]*|[^.]*HELPFUL BUT NOT REQUIRED"
 
 REWRITE_BELOW = 0.6  # description word similarity below this counts as a rewrite
 UNRELATED_BELOW = 0.3  # same number, different title and this dissimilar: a different course
@@ -124,7 +129,9 @@ def parse_descriptions_html(path):
     for subj, num, title, rest in blocks:
         ins = re.search(r"<h3>\s*Instructor\(s\):\s*(.*?)</h3>", rest, re.S)
         body = re.sub(r"<h3>.*?</h3>", " ", rest, flags=re.S)
-        out.append((f"{subj} {num}", strip_tags(title), strip_tags(ins[1]) if ins else "", strip_tags(body)))
+        # The page's footer comes straight after the last course.
+        body = re.sub(r"Last automatic generation:.*", "", strip_tags(body))
+        out.append((f"{subj} {num}", strip_tags(title), strip_tags(ins[1]) if ins else "", body))
     return out
 
 
@@ -153,11 +160,11 @@ def load_descriptions(term):
 def parse_schedule_pdf(path):
     out, cur = {}, None
     for ln in pdf_text(path).split("\n"):
-        m = re.match(rf"^\s*({SUBJECTS})\s+(H?\d{{3}}[A-Z0-9]*)\s+(\S.*?)\s+(\d+(?:-\d+)?)\s*cr\b", ln)
+        m = re.match(rf"^\s*({SUBJECTS})\s+(H?\d{{3}}[A-Z0-9]*)\s+(\S.*?)\s+(\d+(?:\s*-\s*\d+)?)\s*cr\b", ln)
         if m:
             cur = None
             if not m[2].startswith("H"):
-                cur = out.setdefault(f"{m[1]} {m[2]}", {"title": squash(m[3]), "cr": m[4], "sections": []})
+                cur = out.setdefault(f"{m[1]} {m[2]}", {"title": squash(m[3]), "cr": re.sub(r"\s", "", m[4]), "sections": []})
             continue
         m = re.match(r"^\s*([A-Z0-9]{1,3})\s+(LEC|LAB|DIS|SEM|IND|PRA|CLN|STS|COL)\s+(\S+)\s+(\d{4,6})\s*(.*)$", ln)
         if m and cur is not None:
@@ -320,7 +327,9 @@ def same_title(a, b):
 
 def requirement_key(pre):
     """Course codes and grade floors named by a prerequisite, ignoring its wording."""
-    s = pre.upper().replace("STATISTCS", "STATISTC").replace("STAT ", "STATISTC ").replace("ECE ", "E&C-ENG ")
+    # SPIRE's table can wrap a subject at its hyphen, which leaves a space in the text.
+    s = pre.upper().replace("RES- ECON", "RES-ECON").replace("E&C- ENG", "E&C-ENG")
+    s = s.replace("STATISTCS", "STATISTC").replace("STAT ", "STATISTC ").replace("ECE ", "E&C-ENG ")
     codes = set()
     for m in re.finditer(rf"\b({SUBJECTS}|{OTHER_SUBJECTS})\s+(\d{{3}}[A-Z0-9]*(?:(?:\s*(?:,|&|/|OR|AND)\s*)\d{{3}}[A-Z0-9]*)*)", s):
         for num in re.findall(r"\d{3}[A-Z0-9]*", m[2]):
@@ -331,7 +340,10 @@ def requirement_key(pre):
 
 def history_marked(text):
     """A prerequisite in capitals, with "previously" ending where its list of old numbers does."""
-    return text.upper().replace(*RUN_ON_PREVIOUSLY)
+    text = text.upper()
+    for run_on, separated in RUN_ON_PREVIOUSLY:
+        text = text.replace(run_on, separated)
+    return text
 
 
 def renamed_courses(text):
@@ -349,11 +361,23 @@ def renamed_courses(text):
 
 def named_courses(text):
     """Courses a prerequisite actually names, leaving out numbers it only gives as history."""
-    current = re.sub(r"[,;]?\s*PREVIOUSLY [^)\]]*", "", history_marked(text))
+    current = re.sub(NOT_REQUIRED, "", history_marked(text))
+    current = re.sub(r"[,;]?\s*PREVIOUSLY [^)\]]*", "", current)
     return {SAME_NUMBER.get(c, c) for c in requirement_key(current)[0]}
 
 
-def compare(prev, cur):
+def named_differently(codes, present, absent, canon):
+    """The codes that really came or went: a course's old and new numbers are one course,
+    and a number mentioned only as history isn't a requirement. One code per course."""
+    out = {}
+    for code in sorted(codes):
+        row = canon(code)
+        if row in present and row not in absent and (row not in out or code == row):
+            out[row] = code
+    return set(out.values())
+
+
+def compare(prev, cur, canon):
     """Change records between two offerings of the same course."""
     out = []
     if prev["code"] != cur["code"]:
@@ -387,6 +411,8 @@ def compare(prev, cur):
         for new, olds in renamed_courses(was_text):
             if new in after[0]:
                 removed -= olds
+        was, now = ({canon(c) for c in named_courses(t)} for t in (was_text, now_text))
+        added, removed = named_differently(added, now, was, canon), named_differently(removed, was, now, canon)
     if before != after and (added or removed or before[1] != after[1]):
         out.append({"type": "prereq", "source": source, "added": sorted(added), "removed": sorted(removed),
                     "grades": [sorted(before[1]), sorted(after[1])] if before[1] != after[1] else None})
@@ -506,12 +532,13 @@ def describe_prereq(ch, before_text, after_text, approved):
         parts.append(f"stops mentioning earlier course {name_list(old_removed, 3)}")
     if grades:
         was, now = "/".join(grades[0]), "/".join(grades[1])
-        if was and now:
+        came, went = "/".join(sorted(set(grades[1]) - set(grades[0]))), "/".join(sorted(set(grades[0]) - set(grades[1])))
+        if was and now and came and went:
             parts.append(f"minimum grade went from {was} to {now}")
-        elif now:
-            parts.append(f"minimum grade of {now} now stated")
+        elif came:
+            parts.append(f"minimum grade of {came} now stated")
         else:
-            parts.append(f"minimum grade of {was} no longer stated")
+            parts.append(f"minimum grade of {went} no longer stated")
     if not parts:
         count = lambda t: (len(re.findall(r"\bAND\b", t.upper())), len(re.findall(r"\bOR\b", t.upper())))
         parts.append("same courses, but the and/or logic changed" if count(before_text) != count(after_text) else "same courses and grades, reworded")
@@ -523,7 +550,7 @@ def describe_prereq(ch, before_text, after_text, approved):
     return text
 
 
-LEVELS = [("freshmen", r"FRESHM[AE]N"), ("sophomores", r"SOPHOMORES?"), ("juniors", r"JUNIORS?"), ("seniors", r"SENIORS?")]
+LEVELS = [("freshmen", r"FRESHM[AE]N"), ("sophomores", r"SOPHO?MORES?"), ("juniors", r"JUNIORS?"), ("seniors", r"SENIORS?")]
 
 
 def describe_eligibility(before, after):
@@ -614,7 +641,7 @@ def main():
             d, s, e = descriptions[t].get(cid), schedules[t].get(cid), eligibility[t].get(cid)
             if not d and not s:  # SPIRE notes alone don't mean it's on the term's listing
                 continue
-            title = (d and d["title"]) or (s and s["title"].title()) or ""
+            title = (d and d["title"]) or (s and s["title"].title().replace("Phd", "PhD")) or ""
             # The schedule comes from SPIRE; the description text has the occasional slip.
             cr = (s and s["cr"]) or (d and d["cr"])
             o = {"code": cid, "title": title, "cr": cr}
@@ -704,13 +731,15 @@ def main():
     for key, terms in final.items():
         for o in terms.values():
             row_of[o["code"]] = key
+    def canon(code):
+        code = SAME_NUMBER.get(code, code)
+        return row_of.get(code) or row_of.get(find(code)) or code
     for key, terms in final.items():
         for o in terms.values():
             text = (o.get("elig") or {}).get("pre") or o.get("pre")
             if text is None:
                 continue
-            needs = {row_of.get(c) or row_of.get(find(c)) or c for c in named_courses(text)}
-            o["needs"] = sorted(needs - {key})
+            o["needs"] = sorted({canon(c) for c in named_courses(text)} - {key})
 
     courses = []
     for key, terms in final.items():
@@ -725,7 +754,7 @@ def main():
         codes = list(dict.fromkeys(terms[t]["code"] for t in order))
         approved = [o for o in official if o["id"] in codes]
         for a, b in zip(order, order[1:]):
-            found = compare(terms[a], terms[b])
+            found = compare(terms[a], terms[b], canon)
             # A listed change counts even when the courses named stay the same (590NN went OR to AND).
             if any(o["kind"] == "prereq" and TERMS.index(a) < term_index(o["term"]) <= TERMS.index(b) for o in approved):
                 found = [c for c in found if c["type"] != "prereq-wording"]
@@ -750,7 +779,9 @@ def main():
             "offerings": terms,
             "changes": changes,
             "official": approved,
-            "becomes": next(([d, t] for s, d, t, _ in renumberings if s == code and int(t[1:]) * 2 + (t[0] == "F") > 54), None),
+            "becomes": next(([d, t] for s, d, t, _ in renumberings if s == code and int(t[1:]) * 2 + (t[0] == "F") > 54), None)
+            # Approved under a new number that no term's documents here use yet.
+            or next(([" ".join(o["to"].split()[:2]), o["term"]] for o in approved if o["kind"] == "number" and o["id"] == code), None),
         })
     courses.sort(key=lambda c: (c["subject"], int(re.search(r"\d{3}", c["id"])[0]), c["id"], c["key"]))
 
