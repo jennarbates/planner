@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Course History</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="history.css">
+</head>
+<body class="history">
+  <header id="h-head">
+    <div>
+      <h1>Course history</h1>
+      <p id="h-sub" class="muted"></p>
+    </div>
+    <nav class="h-nav">
+      <a href="map.html">Prerequisite map</a>
+      <a href="planner.html">Course planner</a>
+    </nav>
+  </header>
+
+  <section id="h-filters" aria-label="Filters">
+    <label class="wide">Category
+      <select id="f-category">
+        <option value="regular">Regular courses</option>
+        <option value="experimental">Experimental (letter in the number)</option>
+        <option value="all">All courses</option>
+      </select>
+    </label>
+    <label>From <select id="f-from"></select></label>
+    <label>To <select id="f-to"></select></label>
+    <label class="wide">Search <input id="f-search" type="search" placeholder="Code, title or former number…"></label>
+    <label>Subject
+      <select id="f-subject"><option value="">All</option><option>CICS</option><option>COMPSCI</option><option>INFO</option></select>
+    </label>
+    <label>Level
+      <select id="f-level">
+        <option value="">All</option>
+        <option value="100">100</option><option value="200">200</option><option value="300">300</option><option value="400">400</option>
+        <option value="500">500</option><option value="600">600</option><option value="700">700+</option>
+      </select>
+    </label>
+    <label class="wide">Show
+      <select id="f-show">
+        <option value="">All courses listed in the range</option>
+        <option value="any">Any change</option>
+        <option value="prereq">Prerequisite requirement changed</option>
+        <option value="prereq-wording">Prerequisite wording changed</option>
+        <option value="credits">Credits changed</option>
+        <option value="title">Title changed</option>
+        <option value="number">Renumbered</option>
+        <option value="rewrite">Description rewritten</option>
+        <option value="description">Description edited</option>
+        <option value="eligibility">Eligibility changed</option>
+        <option value="new">New in the range</option>
+        <option value="gone">Not listed lately</option>
+      </select>
+    </label>
+  </section>
+
+  <section id="h-stats" aria-label="Summary for the selected range"></section>
+
+  <section id="h-drill" aria-label="List behind the selected summary" hidden></section>
+
+  <section id="h-charts"></section>
+
+  <section id="h-main">
+    <div id="h-left">
+      <div id="h-legend"></div>
+      <div id="h-matrix-wrap"><table id="h-matrix"></table></div>
+    </div>
+    <aside id="h-detail"></aside>
+  </section>
+
+  <section id="h-sources"></section>
+
+  <div id="h-tip" role="status" hidden></div>
+
+  <script src="history-data.js"></script>
+  <script src="history.js"></script>
+</body>
+</html>

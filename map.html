@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Prerequisite Map</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="history.css">
+  <link rel="stylesheet" href="map.css">
+</head>
+<body class="history">
+  <header id="h-head">
+    <div>
+      <h1>Prerequisite map</h1>
+      <p class="muted" id="h-sub">How courses lead into each other, and how that changed from term to term. An arrow means the course on the right names the course on the left in its prerequisites, which may be a requirement or one of several options.</p>
+    </div>
+    <nav class="h-nav">
+      <a href="index.html">← Course history</a>
+      <a href="planner.html">Course planner</a>
+    </nav>
+  </header>
+
+  <section id="h-filters" aria-label="Map controls">
+    <div id="m-view" class="tabs" role="group" aria-label="View">
+      <button type="button" class="tab" data-view="course">One course</button>
+      <button type="button" class="tab" data-view="all">Whole map</button>
+    </div>
+    <div class="course-pick">
+      <label for="m-course">Course</label>
+      <input id="m-course" type="search" list="m-courses" placeholder="Number or title…" autocomplete="off">
+      <datalist id="m-courses"></datalist>
+    </div>
+    <div class="term-control">
+      <label for="m-term">Term: <b id="m-term-label"></b></label>
+      <div class="slider-row">
+        <button type="button" id="m-prev" aria-label="Previous term">‹</button>
+        <div class="slider-wrap">
+          <input id="m-term" type="range" min="0" step="1">
+          <div id="m-ticks" aria-hidden="true"></div>
+        </div>
+        <button type="button" id="m-next" aria-label="Next term">›</button>
+        <button type="button" id="m-play">Play</button>
+      </div>
+    </div>
+    <label>Compare with <select id="m-base"></select></label>
+    <label class="whole-only">Courses
+      <select id="m-scope">
+        <option value="core">Core (most connected)</option>
+        <option value="ugrad">Undergraduate (100–400)</option>
+        <option value="grad">Graduate (500+)</option>
+        <option value="all">All levels</option>
+      </select>
+    </label>
+    <label class="whole-only">Experimental
+      <select id="m-exp">
+        <option value="connected">Only if a regular course names it</option>
+        <option value="all">All experimental courses</option>
+      </select>
+    </label>
+    <label class="whole-only">Other departments
+      <select id="m-out">
+        <option value="mathstat">Math and statistics</option>
+        <option value="all">All</option>
+        <option value="none">None</option>
+      </select>
+    </label>
+    <div id="m-starts" class="course-only">
+      <span class="muted">Try:</span>
+      <button type="button" class="chip-btn" data-start="CICS 110">CICS 110</button>
+      <button type="button" class="chip-btn" data-start="CICS 210">CICS 210</button>
+      <button type="button" class="chip-btn" data-start="COMPSCI 230">COMPSCI 230</button>
+      <button type="button" class="chip-btn" data-start="COMPSCI 311">COMPSCI 311</button>
+      <button type="button" class="chip-btn" data-start="COMPSCI 383">COMPSCI 383</button>
+    </div>
+  </section>
+
+  <section id="h-stats" class="whole-only" aria-label="Summary for this term"></section>
+  <section id="h-drill" class="whole-only" aria-label="Connections list" hidden></section>
+  <section id="m-selected" aria-live="polite"></section>
+
+  <section id="m-legend" aria-label="Legend"></section>
+  <section id="m-scroller" aria-label="Prerequisite map">
+    <div id="m-board"></div>
+  </section>
+
+  <section id="h-sources">
+    <h2>About this map</h2>
+    <ul>
+      <li>One course shows only what that course names and what names it. Whole map shows every connection at once, and its Core view starts with the most-connected undergraduate courses.</li>
+      <li>Connections come from each term's SPIRE prerequisite field, or the course description where SPIRE has no entry. Old numbers mentioned only as history, like "(previously INFO 190T)", don't get an arrow, and renumbered courses stay one box.</li>
+      <li>An arrow doesn't separate "requires" from "accepts as an option", so select a course to read its exact prerequisite wording.</li>
+      <li>A course that runs only in fall or spring stays on the map through the following term, so it doesn't flicker as the slider moves. Its arrows come from its most recent listing.</li>
+      <li>A dashed box is an experimental course, meaning its number has a letter. Courses with no connections aren't shown.</li>
+      <li>The Core view shows undergraduate courses that at least two regular courses, at any level, have named. Math below MATH 132 only appears as a placement option for intro courses, so it's shown only when Other departments is set to All.</li>
+    </ul>
+  </section>
+
+  <script src="history-data.js"></script>
+  <script src="map.js"></script>
+</body>
+</html>

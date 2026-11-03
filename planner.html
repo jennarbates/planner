@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Course Planner</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="app">
+    <aside id="sidebar">
+      <a id="nav-history" href="index.html">← Course history</a>
+      <section>
+        <h2>Plan</h2>
+        <label>Name <input id="plan-name" type="text"></label>
+        <div class="row">
+          <label>Start
+            <select id="start-season"><option>Fall</option><option>Spring</option></select>
+          </label>
+          <label>Year <input id="start-year" type="number" min="2000" max="2100"></label>
+        </div>
+        <div class="row">
+          <label>Semesters <input id="num-semesters" type="number" min="1" max="16"></label>
+          <label>Max credits <input id="max-credits" type="number" min="1" max="40"></label>
+        </div>
+        <div class="row">
+          <label>Min credits <input id="min-credits" type="number" min="0" max="40"></label>
+          <label title="Credits you already have that aren't listed as courses in the Transfer column">Other prior credits <input id="prior-credits" type="number" min="0"></label>
+        </div>
+        <div class="row buttons">
+          <button id="btn-new" type="button">New</button>
+          <button id="btn-open" type="button">Open…</button>
+          <button id="btn-save" type="button">Save</button>
+          <input id="file-input" type="file" accept=".json,application/json" hidden>
+        </div>
+      </section>
+      <section class="grow">
+        <h2>Courses</h2>
+        <input id="search" type="search" placeholder="Search code or title…">
+        <div class="row">
+          <label>Add to <select id="add-target"></select></label>
+          <button id="btn-custom" type="button" title="Create a course that isn't in the catalog">New course</button>
+        </div>
+        <p class="hint">Click + to add, or drag a course onto a column.</p>
+        <ul id="catalog"></ul>
+      </section>
+    </aside>
+  
+    <main>
+      <header id="summary"></header>
+      <div id="graph-wrap">
+        <div id="board"></div>
+      </div>
+      <div id="splitter" title="Drag to resize"></div>
+      <section id="details"></section>
+      <div id="toast" hidden></div>
+    </main>
+  </div>
+
+  <script src="catalog.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
