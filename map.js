@@ -307,7 +307,7 @@ function renderCourseBoard() {
     </div>
     <svg width="${width}" height="${TOP + height + 16}" aria-hidden="true">${ARROW_DEFS}${paths.join("")}</svg>
     ${parts.join("")}
-    <div class="m-node big current ${isExperimental(c) ? "exp" : ""}" data-key="${esc(key)}" tabindex="0" role="button" aria-pressed="true" style="left:${center.x}px;top:${center.y}px;width:${W}px;height:${H}px" title="Clear ${esc(c.id)} and show the whole map">
+    <div class="m-node big current ${isExperimental(c) ? "exp" : ""}" style="left:${center.x}px;top:${center.y}px;width:${W}px;height:${H}px" title="${esc(c.id)}: ${esc(c.title)}">
       <span class="code">${esc(c.id)}</span><span class="title">${esc(c.title)}</span></div>`;
 }
 
@@ -473,7 +473,7 @@ function renderLegend() {
   const compare = baseIndex() !== null;
   if (state.view === "course") {
     const b = baseIndex();
-    $("#m-legend").innerHTML = `<span>Click any course to move to it, or the one in the middle to see the whole map. An arrow may be a requirement or one option of several, so check the wording above.</span>
+    $("#m-legend").innerHTML = `<span>Click any course to move to it. An arrow may be a requirement or one option of several, so check the wording above.</span>
       ${compare ? `<span class="key"><span class="ln added"></span>Added since ${esc(TERM_LABEL[TERM_IDS[b]])}</span><span class="key"><span class="ln dropped"></span>Dropped since ${esc(TERM_LABEL[TERM_IDS[b]])}</span>` : ""}
       <span class="key"><span class="bx exp"></span>Experimental</span>`;
     return;
@@ -623,14 +623,14 @@ $("#m-selected").addEventListener("click", e => {
 function activateNode(node) {
   const key = node.dataset.key;
   if (!BY_KEY.has(key)) return;
-  // Clicking the focused course again lets go of it and shows the whole map.
-  if (state.selected === key) {
-    state.lastCourse = key;
-    state.view = "all";
-    selectNode(null);
-  } else if (state.view === "course") {
+  if (state.view === "course") {
     goToCourse(key);
     return;
+  }
+  // Clicking the selected course again lets go of it.
+  if (state.selected === key) {
+    state.lastCourse = key;
+    selectNode(null);
   } else {
     selectNode(key);
   }

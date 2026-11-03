@@ -97,7 +97,7 @@ body.view-course #m-board { margin: 0 auto; }
 .m-node.big { padding: 6px 10px; }
 .m-node.big .code { font-size: 13px; }
 .m-node.big .wrap { display: block; font-size: 11px; line-height: 15px; color: var(--muted); overflow-wrap: anywhere; }
-.m-node.current { border: 2px solid var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+.m-node.current { border: 2px solid var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); cursor: default; }
 .m-node.st-added { border-color: var(--added); }
 .m-node.st-dropped { border-color: var(--dropped); border-style: dashed; opacity: .8; }
 .m-edge.strong { stroke-width: 1.6; opacity: .75; }
