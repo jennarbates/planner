@@ -27,7 +27,7 @@ Some caveats:
 
 ## Data reliability page
 
-`verify.html` lets course staff see where the data comes from and how far to trust it. It shows what was checked and how each check came out, what to keep in mind, and every course term by term with links to the page of the original document. It's read-only.
+`verify.html` lets course staff see where the data comes from and how far to trust it. It shows what was checked and how each check came out, what to keep in mind, and every course term by term. Clicking a document link opens the original beside the data, at that course's page; on a phone it opens in a new tab. It's read-only.
 
 `verify-data.js` holds where each course is in each document and the results of comparing the site's text with those documents. Rebuild it after `pdfs/` or `history-data.js` change:
 
