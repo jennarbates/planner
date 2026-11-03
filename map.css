@@ -45,6 +45,7 @@ body:not(.view-course) .course-only, body:not(.view-course) #m-starts.course-onl
   background: var(--panel);
   border-bottom: 1px solid var(--border);
 }
+#m-legend:empty { display: none; }
 .key { display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; }
 .key .ln { display: inline-block; width: 24px; height: 0; border-top: 2px solid var(--edge); }
 .key .ln.added { border-top: 3px solid var(--added); }

@@ -14,8 +14,6 @@ const esc = s => String(s ?? "").replace(/[&<>"']/g, c => `&#${c.charCodeAt(0)};
 const plural = (n, word) => `${n} ${word}${n === 1 ? "" : "s"}`;
 const isExperimental = c => /\d[A-Z]/.test(c.id);
 
-const DEFAULT_COURSE = "COMPSCI 311";
-
 const state = {
   term: TERM_IDS.length - 1,
   base: TERM_IDS[0],
@@ -23,7 +21,7 @@ const state = {
   scope: "core",
   exp: "connected",
   out: "mathstat",
-  selected: DEFAULT_COURSE,
+  selected: null,
   lastCourse: null,
   list: null,
 };
@@ -472,6 +470,10 @@ function renderSelected(edges) {
 function renderLegend() {
   const compare = baseIndex() !== null;
   if (state.view === "course") {
+    if (!BY_KEY.has(state.selected)) {
+      $("#m-legend").innerHTML = "";
+      return;
+    }
     const b = baseIndex();
     $("#m-legend").innerHTML = `<span>Click any course to move to it, or the one in the middle to see the whole map. An arrow may be a requirement or one option of several, so check the wording above.</span>
       ${compare ? `<span class="key"><span class="ln added"></span>Added since ${esc(TERM_LABEL[TERM_IDS[b]])}</span><span class="key"><span class="ln dropped"></span>Dropped since ${esc(TERM_LABEL[TERM_IDS[b]])}</span>` : ""}
@@ -660,8 +662,8 @@ function applyHash() {
   const raw = decodeURIComponent(location.hash.slice(1));
   if (!raw) {
     // Back to where the page started.
-    if (state.view === "course" && state.selected !== DEFAULT_COURSE) {
-      state.selected = DEFAULT_COURSE;
+    if (state.view === "course" && state.selected) {
+      state.selected = null;
       render();
     }
     return;
@@ -710,7 +712,7 @@ $("#m-view").addEventListener("click", e => {
   const b = e.target.closest("[data-view]");
   if (!b) return;
   state.view = b.dataset.view;
-  if (state.view === "course" && !state.selected) state.selected = state.lastCourse ?? DEFAULT_COURSE;
+  if (state.view === "course" && !state.selected) state.selected = state.lastCourse;
   render();
 });
 
