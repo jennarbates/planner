@@ -57,6 +57,31 @@
 .v-term h4 { margin: 8px 0 1px; color: var(--muted); font-size: 12px; font-weight: 600; }
 .v-term .v-facts { margin: 2px 0 0; color: var(--muted); font-size: 12.5px; }
 
+/* Document viewer: stays beside the page, which narrows to make room for it. */
+
+body.v-viewing { padding-right: min(52vw, 780px); }
+#v-viewer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  width: min(52vw, 780px);
+  background: var(--panel);
+  border-left: 1px solid var(--border);
+}
+#v-viewer[hidden] { display: none; }
+#v-viewer-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 4px 12px; padding: 8px 14px; border-bottom: 1px solid var(--border); font-size: 13px; line-height: 1.4; }
+#v-viewer-head b { font-weight: 600; }
+#v-viewer-actions { display: flex; align-items: center; gap: 12px; }
+#v-viewer-open { color: var(--accent); font-size: 12.5px; text-decoration: none; white-space: nowrap; }
+#v-viewer-open:hover { text-decoration: underline; }
+#v-viewer-frame { flex: 1; min-height: 0; }
+#v-viewer-frame iframe { display: block; width: 100%; height: 100%; border: 0; background: #fff; }
+a.v-doc.current { font-weight: 600; text-decoration: underline; }
+
 @media (max-width: 760px) {
   #v-page { padding: 0 16px 32px; }
   .v-course > summary { grid-template-columns: minmax(0, 1fr) auto; }

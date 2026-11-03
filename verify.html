@@ -37,12 +37,23 @@
 
     <section id="v-browse">
       <h2>Look through the data</h2>
-      <p class="v-intro">Open any course to see what the site has for each term, with links to the page of the original document it came from.</p>
+      <p class="v-intro">Open any course to see what the site has for each term. Click a document link to read the original at that course's page, next to the data.</p>
       <label id="v-search-label">Search <input id="v-search" type="search" placeholder="Code, title or former number…"></label>
       <p id="v-count" class="muted" aria-live="polite"></p>
       <div id="v-courses"></div>
     </section>
   </main>
+
+  <aside id="v-viewer" aria-label="Source document" hidden>
+    <div id="v-viewer-head">
+      <span id="v-viewer-title"></span>
+      <span id="v-viewer-actions">
+        <a id="v-viewer-open" target="_blank" rel="noopener">Open in a new tab ↗</a>
+        <button id="v-viewer-close" type="button">Close</button>
+      </span>
+    </div>
+    <div id="v-viewer-frame"></div>
+  </aside>
 
   <script src="history-data.js"></script>
   <script src="catalog.js"></script>

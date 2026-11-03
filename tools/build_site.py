@@ -116,11 +116,11 @@ for name in FILES:
         text += "window.SOURCE_URLS = " + json.dumps({f: urls[f] for f in sorted(used)}) + ";\n"
     if name == "verify.html":
         # CICS's own addresses download the file, so a link can't always open at the page.
-        text = replace(text, "with links to the page of the original document it came from.",
-                       "with links to the original documents and the page number to look at.", name)
+        text = replace(text, "Click a document link to read the original at that course's page, next to the data.",
+                       "Its links go to the original documents, with the page number to look at.", name)
     if name == "verify.js":
         text = replace(text, "return `pdfs/${encodeURIComponent(file)}${fragment}`;", "return `${window.SOURCE_URLS[file]}${fragment}`;", name)
-        text = replace(text, '<a href="pdfs/${encodeURIComponent(file)}" target="_blank"', '<a href="${esc(window.SOURCE_URLS[file])}" target="_blank"', name)
+        text = replace(text, "const SHOW_DOCUMENTS_HERE = true;", "const SHOW_DOCUMENTS_HERE = false;", name)
         text = replace(text, "its prerequisites were written by hand from those documents.`", f"its prerequisites were written by hand from those documents. {UNOFFICIAL}`", name)
     if name == "app.js":
         text = replace(text, "  localStorage.setItem(STORAGE_KEY, JSON.stringify(plan));",

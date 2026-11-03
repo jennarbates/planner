@@ -15,6 +15,7 @@ const REGENERATED_FILE = "F22-descriptions-2024-01-regenerated.pdf";
 const RETIRED = new Set(["COMPSCI 121", "COMPSCI 186", "COMPSCI 187", "INFO 190S", "INFO 190T"]);
 const COURSE_CODE = /[A-Z&-]+ \d{3}[A-Z0-9]*/g;
 const KINDS = { descriptions: "Descriptions", schedule: "Schedule", eligibility: "SPIRE" };
+const SHOW_DOCUMENTS_HERE = true; // tools/build_site.py turns this off, since claude.ai can't embed other sites
 
 const $ = sel => document.querySelector(sel);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => `&#${c.charCodeAt(0)};`);
@@ -34,12 +35,16 @@ function sourceHref(file, code) {
   return `pdfs/${encodeURIComponent(file)}${fragment}`;
 }
 
+function documentLink(file, code, title, text) {
+  return `<a class="v-doc" href="${esc(sourceHref(file, code))}" data-file="${esc(file)}" data-code="${esc(code)}" data-title="${esc(title)}" target="_blank" rel="noopener">${esc(text)}</a>`;
+}
+
 function sourceLink(term, o, kind) {
   const file = listingFile(term, o, kind);
   const place = PAGES[file]?.[o.code];
   if (place === undefined) return "";
   const page = typeof place === "number" ? `, p. ${place}` : "";
-  return `<a href="${esc(sourceHref(file, o.code))}" target="_blank" rel="noopener">${esc(KINDS[kind])}${page}</a>`;
+  return documentLink(file, o.code, `${TERM_LABEL[term]} ${KINDS[kind]}`, `${KINDS[kind]}${page}`);
 }
 
 // ---- Comparing the data with itself and with CICS's lists ----
@@ -146,7 +151,7 @@ function renderNotes(approved) {
   const reworded = planner.extra.length + planner.left.length;
   const documents = TERMS.map(t => `<tr><th>${esc(t.label)}</th>${Object.keys(KINDS).map(k => {
     const file = t.files[k];
-    return `<td><a href="pdfs/${encodeURIComponent(file)}" target="_blank" rel="noopener">${esc(KINDS[k])}</a> <span class="muted">${esc(ORIGINS[file]?.origin.split(" (")[0] ?? "")}</span></td>`;
+    return `<td>${documentLink(file, "", `${t.label} ${KINDS[k]}`, KINDS[k])} <span class="muted">${esc(ORIGINS[file]?.origin.split(" (")[0] ?? "")}</span></td>`;
   }).join("")}</tr>`).join("");
 
   $("#v-notes").innerHTML = [
@@ -257,6 +262,57 @@ $("#v-notes").addEventListener("click", e => {
     e.preventDefault();
     openCourse(link.dataset.course);
   }
+});
+
+// ---- Document viewer ----
+
+// Phones show a PDF better on its own, so narrow screens keep the plain new-tab link.
+const viewerFits = window.matchMedia("(min-width: 900px)");
+let viewerOpener = null;
+
+function showDocument(link) {
+  const { file, code, title } = link.dataset;
+  const place = PAGES[file]?.[code];
+  const where = typeof place === "number" ? ` · page ${place}` : code && !place ? ` · search the page for ${code}` : "";
+  const href = sourceHref(file, code);
+  // Room for the page itself, not thumbnails.
+  const src = file.endsWith(".pdf") ? `${href}${href.includes("#") ? "&" : "#"}navpanes=0&view=FitH` : href;
+  // Saved web pages can run scripts of their own, so they're shown without them.
+  const sandbox = file.endsWith(".html") ? `sandbox=""` : "";
+  $("#v-viewer-title").innerHTML = `<b>${esc(title)}</b>${esc(where)}`;
+  $("#v-viewer-open").href = href;
+  $("#v-viewer-frame").innerHTML = `<iframe ${sandbox} title="${esc(title)}" src="${esc(src)}"></iframe>`;
+  $("#v-viewer").hidden = false;
+  document.body.classList.add("v-viewing");
+  document.querySelector("a.v-doc.current")?.classList.remove("current");
+  link.classList.add("current");
+  viewerOpener = link;
+  link.scrollIntoView({ block: "nearest" }); // the page just got narrower, which moves it
+}
+
+function closeDocument() {
+  if ($("#v-viewer").hidden) return;
+  $("#v-viewer").hidden = true;
+  $("#v-viewer-frame").innerHTML = "";
+  document.body.classList.remove("v-viewing");
+  document.querySelector("a.v-doc.current")?.classList.remove("current");
+  viewerOpener?.focus();
+  viewerOpener = null;
+}
+
+document.addEventListener("click", e => {
+  const link = e.target.closest("a.v-doc");
+  // A modified click still means "open this in a new tab".
+  if (!link || !SHOW_DOCUMENTS_HERE || !viewerFits.matches || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+  e.preventDefault();
+  showDocument(link);
+});
+$("#v-viewer-close").addEventListener("click", closeDocument);
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape") closeDocument();
+});
+viewerFits.addEventListener("change", () => {
+  if (!viewerFits.matches) closeDocument();
 });
 
 const approvedChanges = compareApproved();
