@@ -430,7 +430,7 @@ function flowContent(kind) {
     rows: rows.sort(kind === "running"
       ? (x, y) => times(y) - times(x)
       : (x, y) => TERM_IDS.indexOf(listedTerms(y).at(-1)) - TERM_IDS.indexOf(listedTerms(x).at(-1)))
-      .map(c => ({ key: c.key, term: listedTerms(c).at(-1), cells: [...courseCells(c), String(times(c)), esc(last(c))] })),
+      .map(c => ({ key: c.key, term: listedTerms(c).at(-1), cells: [...courseCells(c), String(times(c)), `${esc(last(c))}${c.becomes ? ` <span class="muted">approved as ${esc(c.becomes[0])}</span>` : ""}`] })),
   };
 }
 
@@ -576,6 +576,7 @@ function sectionSummary(o) {
 }
 
 const creditsText = o => (o?.cr ? `${esc(o.cr)}${o.crDesc ? ` <span class="muted">(description text says ${esc(o.crDesc)})</span>` : ""}` : "unknown");
+const creditsLabel = o => (o?.cr ? `${esc(o.cr)} ${o.cr === "1" ? "credit" : "credits"}${o.crDesc ? ` <span class="muted">(description text says ${esc(o.crDesc)})</span>` : ""}` : "credits unknown");
 
 const HISTORY_FIELDS = [
   { key: "pre", label: "Prerequisites (course description)", get: o => o.pre },
@@ -633,7 +634,7 @@ function historyEntries(c) {
       lastSeen[f.key] = v;
     }
     const titleChanged = changes.some(ch => ch.type === "title" || ch.type === "number");
-    const facts = [`${creditsText(o)} credits`, sectionSummary(o)].filter(Boolean).join(" · ");
+    const facts = [creditsLabel(o), sectionSummary(o)].filter(Boolean).join(" · ");
     const notes = [
       o.regenerated ? `This text comes from a copy CICS regenerated in January 2024, so its wording may be newer than 2022.` : "",
       o.alsoListedAs ? `Also on this term's schedule as ${esc(o.alsoListedAs)}.` : "",
@@ -716,7 +717,7 @@ function currentBar(c, status) {
   return `<div class="d-pinned">
     <h2>${esc(c.id)}</h2>
     <div class="subtitle">${esc(c.title)}</div>
-    <div class="pinned-facts"><span class="badge ${status.isCurrent ? "" : "old"}">${esc(status.badge)}</span> ${creditsText(o)} credits</div>
+    <div class="pinned-facts"><span class="badge ${status.isCurrent ? "" : "old"}">${esc(status.badge)}</span> ${creditsLabel(o)}</div>
     <div class="pinned-pre" title="${esc(pre || "")}"><b>Prerequisites:</b> ${pre ? esc(pre) : "none listed"}</div>
   </div>`;
 }
@@ -733,7 +734,7 @@ function currentSection(c, status) {
   return `<details class="panel" data-panel="current" ${state.currentOpen ? "open" : ""}>
     <summary>${status.isCurrent ? "Current listing" : "Most recent listing"}: ${esc(TERM_LABEL[status.term])}</summary>
     <div class="note">${esc(status.note)}</div>
-    <div class="facts">${esc(o.code)} · ${creditsText(o)} credits${sectionSummary(o) ? ` · ${esc(sectionSummary(o))}` : ""}${o.instr ? `<br>Instructors: ${esc(o.instr)}` : ""}</div>
+    <div class="facts">${esc(o.code)} · ${creditsLabel(o)}${sectionSummary(o) ? ` · ${esc(sectionSummary(o))}` : ""}${o.instr ? `<br>Instructors: ${esc(o.instr)}` : ""}</div>
     ${field("Prerequisites (SPIRE)", x => x.elig?.pre)}
     ${field("Prerequisites (course description)", x => x.pre)}
     ${field("Eligibility (SPIRE)", x => x.elig?.restrict)}
@@ -780,7 +781,8 @@ function renderDetail() {
   }
   const list = listedTerms(c);
   const status = currentStatus(c);
-  const becomes = c.becomes ? `<div class="note">CICS lists this as becoming ${esc(c.becomes[0])} in ${esc(c.becomes[1].replace("F", "Fall 20").replace("S", "Spring 20"))}, after the last term here.</div>` : "";
+  const becomesWhen = c.becomes && TERM_IDS.includes(c.becomes[1]) ? ", but neither number is in that term's documents." : ", after the last term here.";
+  const becomes = c.becomes ? `<div class="note">CICS lists this as becoming ${esc(c.becomes[0])} in ${esc(c.becomes[1].replace("F", "Fall 20").replace("S", "Spring 20"))}${becomesWhen}</div>` : "";
   const tab = (mode, text) => `<button type="button" class="tab" data-mode="${mode}" aria-pressed="${state.mode === mode}">${text}</button>`;
 
   el.innerHTML = `${currentBar(c, status)}
@@ -822,9 +824,9 @@ function renderSources() {
     <tbody>${TERMS.map(t => `<tr><th scope="row">${esc(t.label)}</th>${cell(t, "descriptions")}${cell(t, "schedule")}${cell(t, "eligibility")}</tr>`).join("")}</tbody></table>
     <ul>
       <li>Every file is saved in the <code>pdfs/</code> folder. <code>pdfs/SOURCES.md</code> lists where each one came from.</li>
-      <li>Fall 2025: CICS reused the file addresses for its Spring 2027 documents, so the Fall 2025 description and schedule PDFs can no longer be downloaded. Those two use CICS's Fall 2025 web pages, which have the same content.</li>
-      <li>Fall 2022 to Fall 2023 are archived copies from the Wayback Machine. Each is the document as last captured, so some predate the end of registration for that term.</li>
-      <li>A prerequisite counts as changed when the courses or minimum grades named in SPIRE differ, or when the course is on CICS's approved-changes list. A difference only in the catalog's wording counts as wording.</li>
+      <li>Fall 2025: CICS reused the file addresses for its Spring 2027 documents, so the Fall 2025 description and schedule PDFs can no longer be downloaded. Those two use CICS's Fall 2025 web pages instead.</li>
+      <li>Fall 2022 to Fall 2023, and the Spring 2024 SPIRE document, are archived copies from the Wayback Machine. Each is the document as last captured, so some predate the end of registration for that term.</li>
+      <li>A prerequisite counts as changed when the courses or minimum grades named in SPIRE differ, or when the course is on CICS's approved-changes list. A course's old and new numbers count as one course, so a renumbering alone isn't a change. A difference only in the catalog's wording counts as wording.</li>
       <li>Topic numbers that were reused for an unrelated course appear as separate rows. Renumbered courses share a row when CICS lists the change. Four pairs missing from those lists also share a row, each with its reason shown in the course's changes: three because SPIRE's notes give the previous number, and one because its title and description match.</li>
       <li>Courses whose latest number has a letter, such as COMPSCI 590X, are treated as experimental and kept out of the numbers unless you choose them under Category. A course that later got a plain number counts as regular for all of its terms, including those under its old number.</li>
       <li>This page compares what CICS published. A course missing from a listing may still have run, and honors colloquia are left out.</li>

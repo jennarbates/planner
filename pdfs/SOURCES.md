@@ -53,4 +53,6 @@ Downloaded on November 2, 2026. Nothing here has been edited.
 - **"Spring 2024 Prerequisites" on the CICS site:** that page serves a byte-for-byte copy of the Fall 2024 draft (`media/5141`). `S24-eligibility.pdf` is the real one, from the Wayback Machine.
 - **F22 descriptions:** the copy on the site at the end was regenerated on January 22, 2024 with later course numbers and wording (kept here as `F22-descriptions-2024-01-regenerated.pdf`). `F22-descriptions.pdf` is the version from May 23, 2022.
 - **Early captures:** `F22-schedule.pdf` (May 2022), `F22-eligibility.pdf` (July 2022), `S23-eligibility.pdf` (December 2022) and `F23-eligibility.pdf` (June 2023) were the last captures available, so they predate the end of registration for those terms.
+- **COMPSCI 690G's new number:** CICS's changes page gives Spring 2028 as the date it becomes COMPSCI 662, but its Spring 2027 documents already use 662.
+- **COMPSCI 485's linguistics option:** SPIRE gives LINGUIST 429H/492B, but the course description says LINGUIST 429B (previously LINGUIST 492B). The site shows LINGUIST 429H and 429B as separate courses, since no document says how they relate.
 - **F24 drafts:** the files ending in `-draft` are earlier versions from the same term, kept for reference and not used by the build.

@@ -418,6 +418,8 @@ function renderCatalog() {
   }).join("");
 }
 
+const creditsLabel = credits => `${credits} ${+credits === 1 ? "credit" : "credits"}`;
+
 // Credits a placed course counts for; waived courses count for none.
 function creditValue(id) {
   return plan.courses[id]?.waived ? 0 : +getCourse(id).credits || 0;
@@ -529,7 +531,7 @@ function renderBoard() {
     const waived = plan.courses[id].waived;
     const cls = ["node", warns.length && "warn", plan.courses[id].auto && "auto", waived && "waived", id === selected && "selected",
       related && !related.has(id) && "dim", c.stub && "stub"].filter(Boolean).join(" ");
-    const tip = [`${id} ${c.title}`, `${waived ? "Waived (no credit)" : `${c.credits} credits`} · ${OFFERED_LABELS[c.offered] ?? c.offered}`, ...warns.map(w => `⚠ ${w}`)];
+    const tip = [`${id} ${c.title}`, `${waived ? "Waived (no credit)" : creditsLabel(c.credits)} · ${OFFERED_LABELS[c.offered] ?? c.offered}`, ...warns.map(w => `⚠ ${w}`)];
     if (plan.waivedPrereqs[id]?.length) tip.push(`Waived prerequisites: ${plan.waivedPrereqs[id].join(", ")}`);
     return `<div class="${cls}" data-id="${esc(id)}" style="left:${x}px;top:${y}px;width:${NODE_W}px;height:${NODE_H}px" title="${esc(tip.join("\n"))}">
       <div class="node-top"><span class="code">${esc(id)}</span><span class="cr">${waived ? "waived" : `${c.credits}cr`}</span></div>
@@ -628,7 +630,7 @@ function renderDetails() {
     : `<section class="d-info">
       <h2>${esc(id)}</h2>
       <div class="subtitle">${esc(c.title)}</div>
-      <div class="facts">${placement?.waived ? "Waived (no credit)" : `${c.credits} credits`} · ${esc(OFFERED_LABELS[c.offered] ?? c.offered)}${placement?.auto ? " · <span class='auto-tag'>auto-added</span>" : ""}${overridden ? " · edited" : ""}${/^(CICS|COMPSCI|INFO) /.test(id) ? ` · <a href="index.html#${encodeURIComponent(id)}">history</a>` : ""}</div>
+      <div class="facts">${placement?.waived ? "Waived (no credit)" : creditsLabel(c.credits)} · ${esc(OFFERED_LABELS[c.offered] ?? c.offered)}${placement?.auto ? " · <span class='auto-tag'>auto-added</span>" : ""}${overridden ? " · edited" : ""}${/^(CICS|COMPSCI|INFO) /.test(id) ? ` · <a href="index.html#${encodeURIComponent(id)}">history</a>` : ""}</div>
       <div class="row">
         <label>Semester <select id="d-sem">${inPlan ? "" : `<option value="" selected>— not in plan —</option>`}${semOptions}</select></label>
         ${inPlan ? `<button id="d-remove" type="button" class="danger">Remove</button>` : ""}

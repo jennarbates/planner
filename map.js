@@ -42,7 +42,7 @@ const UNLISTED_NOTES = {
 
 // A CICS number with no row here was named in a prerequisite but isn't in any listing we have.
 const isCicsCode = code => /^(CICS|COMPSCI|INFO) /.test(code);
-const unlistedTitle = code => UNLISTED_NOTES[code]?.short ?? (isCicsCode(code) ? `Not listed since ${TERM_LABEL[TERM_IDS[0]]}` : "Outside CICS listings");
+const unlistedTitle = code => UNLISTED_NOTES[code]?.short ?? (isCicsCode(code) ? "No listing in these terms" : "Outside CICS listings");
 const unlistedHead = codes => (codes.some(isCicsCode) ? "Not in CICS listings" : "Other departments");
 const unlistedLine = code => (UNLISTED_NOTES[code] ? `${code}. ${UNLISTED_NOTES[code].full}` : code);
 
@@ -265,7 +265,7 @@ function renderCourseBoard() {
   const { prereqs, outside, leads } = courseConnections(key);
   const leadCols = leads.length > 8 ? 2 : 1;
   const leadRows = Math.ceil(leads.length / leadCols);
-  const outsideText = outside.map(o => unlistedLine(o.key)).join(", ");
+  const outsideText = outside.map(o => `${unlistedLine(o.key)}${{ added: " (added)", dropped: " (dropped)" }[o.status] ?? ""}`).join(", ");
   const outsideLines = Math.ceil(outsideText.length / 26);
   const outsideH = outside.length ? 30 + outsideLines * 15 : 0;
   const leftH = prereqs.length * (H + GAP) + (outside.length ? outsideH + GAP : 0);
@@ -512,6 +512,7 @@ function renderControls() {
   $("#m-base").value = state.base;
   $("#m-scope").value = state.scope;
   $("#m-exp").value = state.exp;
+  $("#m-out").value = state.out;
   $("#m-play").textContent = playTimer ? "Pause" : "Play";
   document.body.classList.toggle("view-course", state.view === "course");
   document.querySelectorAll("[data-view]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.view === state.view)));

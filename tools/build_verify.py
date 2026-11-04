@@ -44,7 +44,7 @@ def description_pages(path):
 def schedule_pages(path):
     found = {}
     for n, page in enumerate(pdf_pages(path), 1):
-        for m in re.finditer(rf"^\s*({SUBJECTS})\s+(H?\d{{3}}[A-Z0-9]*)\s+\S.*?\s+\d+(?:-\d+)?\s*cr\b", page, re.M):
+        for m in re.finditer(rf"^\s*({SUBJECTS})\s+(H?\d{{3}}[A-Z0-9]*)\s+\S.*?\s+\d+(?:\s*-\s*\d+)?\s*cr\b", page, re.M):
             found.setdefault(f"{m[1]} {m[2]}", n)
     return found
 

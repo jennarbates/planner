@@ -14,6 +14,12 @@ const REGENERATED_FILE = "F22-descriptions-2024-01-regenerated.pdf";
 // The planner leaves these out on purpose (see the README), so naming them isn't a disagreement.
 const RETIRED = new Set(["COMPSCI 121", "COMPSCI 186", "COMPSCI 187", "INFO 190S", "INFO 190T"]);
 const COURSE_CODE = /[A-Z&-]+ \d{3}[A-Z0-9]*/g;
+// Used by the build as well as each term's three documents.
+const OTHER_DOCUMENTS = [
+  [REGENERATED_FILE, "Fall 2022 descriptions, regenerated"],
+  ["new-course-numbers.html", "CICS's renumbering list"],
+  ["course-changes.html", "CICS's approved changes"],
+];
 const KINDS = { descriptions: "Descriptions", schedule: "Schedule", eligibility: "SPIRE" };
 const SHOW_DOCUMENTS_HERE = true; // tools/build_site.py turns this off, since claude.ai can't embed other sites
 
@@ -21,6 +27,12 @@ const $ = sel => document.querySelector(sel);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => `&#${c.charCodeAt(0)};`);
 const n = x => x.toLocaleString();
 const plural = (count, word) => `${n(count)} ${word}${count === 1 ? "" : "s"}`;
+const creditWord = cr => (String(cr) === "1" ? "credit" : "credits");
+// The planner counts a variable-credit course at one value, so anything in the range agrees.
+function creditsAgree(planned, listed) {
+  const [low, high = low] = listed.split("-").map(Number);
+  return planned >= low && planned <= high;
+}
 
 const listedTerms = c => TERM_IDS.filter(t => c.offerings[t]);
 const allListings = () => COURSES.flatMap(c => listedTerms(c).map(term => ({ c, term, o: c.offerings[term] })));
@@ -80,7 +92,7 @@ function comparePlanner() {
     }
     const term = listedTerms(c).at(-1);
     const o = c.offerings[term];
-    if (o.cr && String(entry.credits) !== o.cr) out.credits.push({ entry, term, o });
+    if (o.cr && !creditsAgree(entry.credits, o.cr)) out.credits.push({ entry, term, o });
     const planned = new Set(entry.prereq.match(COURSE_CODE) ?? []);
     const named = new Set(o.needs ?? []);
     const extra = [...planned].filter(x => !named.has(x));
@@ -101,7 +113,7 @@ function renderSummary() {
     [n(COURSES.length), "CICS, COMPSCI and INFO courses"],
     [n(listings.length), "term-by-term course listings"],
     [n(TERMS.length), "terms"],
-    [n(files.size), "source documents, all linked below"],
+    [n(files.size + OTHER_DOCUMENTS.length), "source documents, all linked below"],
   ];
   $("#h-stats").innerHTML = tiles.map(([value, label]) => `<div class="stat"><span class="n">${value}</span><span class="l">${esc(label)}</span></div>`).join("");
 }
@@ -152,7 +164,7 @@ function renderNotes(approved) {
   const documents = TERMS.map(t => `<tr><th>${esc(t.label)}</th>${Object.keys(KINDS).map(k => {
     const file = t.files[k];
     return `<td>${documentLink(file, "", `${t.label} ${KINDS[k]}`, KINDS[k])} <span class="muted">${esc(ORIGINS[file]?.origin.split(" (")[0] ?? "")}</span></td>`;
-  }).join("")}</tr>`).join("");
+  }).join("")}</tr>`).join("") + OTHER_DOCUMENTS.map(([file, label]) => `<tr><th>${esc(label)}</th><td colspan="3">${documentLink(file, "", label, "Open")} <span class="muted">${esc(ORIGINS[file]?.origin.split(" (")[0] ?? "")}</span></td></tr>`).join("");
 
   $("#v-notes").innerHTML = [
     noteBlock("What these checks can't show", null, `<ul>
@@ -171,8 +183,8 @@ function renderNotes(approved) {
     noteBlock("Courses merged by hand", merges.length, `<ul>
       ${merges.map(({ c, ch }) => `<li>${courseLink(c.id)}: ${esc(ch.from)} became ${esc(ch.to)}. <span class="muted">${esc(ch.basis)}.</span></li>`).join("")}
     </ul>`),
-    noteBlock("Course planner: where it differs from the latest listing", planner.credits.length + reworded, `<p>The planner's prerequisites were written by hand from the Fall 2026 and Spring 2027 text. It deliberately follows the CS-major path and leaves out retired courses, so a difference isn't always a mistake.</p>
-      <h4>Credits (${planner.credits.length})</h4><ul>${planner.credits.map(({ entry, term, o }) => `<li>${courseLink(entry.id)}: planner says ${esc(entry.credits)}, the ${esc(TERM_LABEL[term])} schedule says ${esc(o.cr)}</li>`).join("")}</ul>
+    noteBlock("Course planner: where it differs from the latest listing", planner.credits.length + reworded, `<p>The planner's prerequisites were written by hand from the Fall 2026 and Spring 2027 text, or a course's latest listing if it isn't in those. It deliberately follows the CS-major path and leaves out retired courses, so a difference isn't always a mistake.</p>
+      ${planner.credits.length ? `<h4>Credits (${planner.credits.length})</h4><ul>${planner.credits.map(({ entry, term, o }) => `<li>${courseLink(entry.id)}: planner says ${esc(entry.credits)}, the ${esc(TERM_LABEL[term])} schedule says ${esc(o.cr)}</li>`).join("")}</ul>` : ""}
       <h4>The planner requires a course the listing doesn't name (${planner.extra.length})</h4><ul>${planner.extra.map(({ entry, term, codes }) => `<li>${courseLink(entry.id)}: ${esc(codes.join(", "))} <span class="muted">(${esc(TERM_LABEL[term])})</span></li>`).join("")}</ul>
       <h4>The listing names a course the planner leaves out (${planner.left.length})</h4><ul>${planner.left.map(({ entry, term, codes }) => `<li>${courseLink(entry.id)}: ${esc(codes.join(", "))} <span class="muted">(${esc(TERM_LABEL[term])})</span></li>`).join("")}</ul>`),
     noteBlock("Planner courses with no saved document", planner.noDocument.length, `<p>Math, science and writing courses were added by hand from the BS-CS tracking form. The others are on the course offering plan but in no term's documents here. Check these on SPIRE.</p>
@@ -188,7 +200,7 @@ function termBlock(c, term) {
   const o = c.offerings[term];
   const sources = Object.keys(KINDS).map(k => sourceLink(term, o, k)).filter(Boolean).join(" · ");
   const field = (label, value) => (value ? `<h4>${esc(label)}</h4><p class="field">${esc(value)}</p>` : "");
-  const facts = [o.code, o.title, o.cr ? `${o.cr} credits${o.crDesc ? ` (description says ${o.crDesc})` : ""}` : "credits not listed", o.instr].filter(Boolean).join(" · ");
+  const facts = [o.code, o.title, o.cr ? `${o.cr} ${creditWord(o.cr)}${o.crDesc ? ` (description says ${o.crDesc})` : ""}` : "credits not listed", o.instr].filter(Boolean).join(" · ");
   const changes = c.changes.filter(ch => ch.term === term);
   return `<div class="v-term">
     <div class="v-term-head"><b>${esc(TERM_LABEL[term])}</b><span class="v-sources">${sources}</span></div>
@@ -205,7 +217,7 @@ function termBlock(c, term) {
 
 function courseBody(c) {
   const entry = CATALOG.find(e => e.id === c.id);
-  const planner = entry ? `<div class="v-planner"><b>In the planner:</b> ${esc(entry.credits)} credits${entry.prereq ? `, requires <code>${esc(entry.prereq)}</code>` : ", no prerequisites entered"}</div>` : "";
+  const planner = entry ? `<div class="v-planner"><b>In the planner:</b> ${esc(entry.credits)} ${creditWord(entry.credits)}${entry.prereq ? `, requires <code>${esc(entry.prereq)}</code>` : ", no prerequisites entered"}</div>` : "";
   return `<p class="v-course-links"><a href="index.html#${encodeURIComponent(c.key)}">See this course on the history page</a></p>
     ${planner}${listedTerms(c).reverse().map(t => termBlock(c, t)).join("")}`;
 }

@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """Build planner/catalog.js from the CICS PDFs and the course offering plan.
 
-Usage (from the repo root):
-    pdftotext -layout F26coursedescription.pdf /tmp/F26.txt
-    pdftotext -layout S27coursedescription.pdf /tmp/S27.txt
+Usage (from the planner folder):
+    pdftotext -layout pdfs/F26-descriptions.pdf /tmp/F26.txt
+    pdftotext -layout pdfs/S27-descriptions.pdf /tmp/S27.txt
     curl -sL -o /tmp/offering.html https://content.cs.umass.edu/content/course-offering-plan
-    python3 planner/tools/build_catalog.py /tmp/offering.html /tmp/F26.txt /tmp/S27.txt > planner/catalog.js
+    python3 -I tools/build_catalog.py /tmp/offering.html /tmp/F26.txt /tmp/S27.txt > catalog.js
 
 Description files are recognised as Fall/Spring by "F"/"S" at the start of
 their file name. Prerequisite text in the PDFs is prose, so the structured
@@ -28,11 +28,11 @@ PREREQS = {
     "CICS 210": "CICS 160",
     "CICS 256": "CICS 210",
     "CICS 305": "ENGLWRIT 112 & COMPSCI 220 & COMPSCI 230 & (COMPSCI 240 | COMPSCI 250)",
-    "COMPSCI 198C": "CICS 160",
+    "COMPSCI 198C": "CICS 160 | CICS 210",
     "COMPSCI 220": "CICS 210",
     "COMPSCI 230": "CICS 210 & COMPSCI 198C",
-    "COMPSCI 240": "CICS 160 & MATH 132",
-    "COMPSCI 250": "CICS 160 & MATH 132",
+    "COMPSCI 240": "(CICS 160 | CICS 210) & MATH 132",
+    "COMPSCI 250": "(CICS 160 | CICS 210) & MATH 132",
     "COMPSCI 311": "CICS 210 & (COMPSCI 250 | MATH 455)",
     "COMPSCI 320": "COMPSCI 220",
     "COMPSCI 325": "CICS 210 | (INFO 248 & CICS 160)",
@@ -49,7 +49,7 @@ PREREQS = {
     "COMPSCI 383": "CICS 210 & (COMPSCI 240 | STATISTC 315)",
     "COMPSCI 389": "CICS 210 & (COMPSCI 240 | STATISTC 315 | STATISTC 240) & MATH 132",
     "COMPSCI 412": "MATH 132 & MATH 235 & (COMPSCI 240 | STATISTC 315 | PHYSICS 281 | PHYSICS 287)",
-    "COMPSCI 420": "COMPSCI 320 | COMPSCI 326",
+    "COMPSCI 420": "COMPSCI 320 | COMPSCI 325 | COMPSCI 326",
     "COMPSCI 426": "COMPSCI 320 | COMPSCI 326",
     "COMPSCI 445": "(COMPSCI 220 | COMPSCI 230) & COMPSCI 311 & COMPSCI 345",
     "COMPSCI 446": "COMPSCI 240 | COMPSCI 383",
@@ -88,6 +88,29 @@ PREREQS = {
     "INFO 324": "INFO 248 | STATISTC 315 | COMPSCI 240",
     "INFO 348": "INFO 248 & CICS 160",
     "INFO 494PI": "(INFO 248 | COMPSCI 240) & CICS 210",
+    # Not in the F26/S27 text, so these are from the course's latest listing.
+    "CICS 590P": "CICS 305",
+    "COMPSCI 365": "COMPSCI 230",
+    "COMPSCI 370": "COMPSCI 240 | COMPSCI 383",
+    "COMPSCI 373": "CICS 210 & (MATH 235 | INFO 150 | COMPSCI 240)",
+    "COMPSCI 403": "MATH 235 & (COMPSCI 220 | COMPSCI 230)",
+    "COMPSCI 410": "COMPSCI 230 & (COMPSCI 250 | MATH 455)",
+    "COMPSCI 429": "COMPSCI 320",
+    "COMPSCI 508": "CICS 305",
+    "COMPSCI 513": "COMPSCI 250 & COMPSCI 311",
+    "COMPSCI 524": "COMPSCI 240 | STATISTC 315",
+    "COMPSCI 528": "COMPSCI 230 & COMPSCI 240",
+    "COMPSCI 546": "(COMPSCI 320 | COMPSCI 326) & (COMPSCI 383 | COMPSCI 389 | COMPSCI 446 | COMPSCI 485)",
+    "COMPSCI 560": "COMPSCI 453 | E&C-ENG 374",
+    "COMPSCI 574": "COMPSCI 311 & COMPSCI 383 & COMPSCI 373",
+    "COMPSCI 576": "COMPSCI 220 & MATH 235 & (COMPSCI 311 | COMPSCI 250)",
+    "COMPSCI 578": "COMPSCI 377",
+    "COMPSCI 590AB": "COMPSCI 412 | COMPSCI 590Q | COMPSCI 590QC | E&C-ENG 550 | PHYSICS 537",
+    "COMPSCI 590L": "COMPSCI 383",
+    "COMPSCI 590OP": "COMPSCI 240 & MATH 235 & MATH 233",
+    "COMPSCI 591NR": "COMPSCI 311",
+    "COMPSCI 653": "COMPSCI 453 & COMPSCI 311",
+    "INFO 390C": "INFO 248 | (CICS 210 & COMPSCI 240)",
 }
 
 # Non-CICS courses from the BS-CS tracking form and prerequisite lists.
@@ -109,6 +132,17 @@ EXTRA = [
     ("PHYSICS 152", "General Physics II", 4, "", "PHYSICS 151"),
     ("GEOL 101", "Planet Earth", 4, "", ""),
 ]
+
+# The offering plan calls these one-season courses, but they were listed in the other season
+# at least twice in the last six terms (Spring 2025 to Spring 2027 in history-data.js).
+LISTED_IN_BOTH = {
+    "CICS 127", "CICS 590P", "COMPSCI 360", "COMPSCI 389", "COMPSCI 426", "COMPSCI 485",
+    "COMPSCI 550", "COMPSCI 565", "COMPSCI 602", "COMPSCI 682", "INFO 348", "INFO 390C",
+}
+# The description text says 3, but every schedule since Fall 2023 says 4. The site uses the schedule's.
+CREDITS = {"CICS 208": 4}
+# In the offering plan but not the F26/S27 descriptions, so this is its Spring 2026 text.
+NOTES = {"COMPSCI 446": "Prerequisite: COMPSCI 240 or COMPSCI 383 with a grade of C or better."}
 
 FREQ = {
     "Fall and Spring": "FS", "Fall": "F", "Spring": "S",
@@ -137,9 +171,10 @@ def parse_descriptions(path):
     for ln in open(path).read().split("\n"):
         if re.search(r"---\s+page \d+\s+---", ln) or "UMassAmherst" in ln or "Manning College" in ln:
             continue
-        m = re.match(r"^\s{0,4}([A-Z]{3,9}) (H?\d{3}[A-Z0-9]*)\s{1,3}(\S.*)$", ln)
+        # A few headings have no title (COMPSCI 370 in Spring 2027).
+        m = re.match(r"^\s{0,4}([A-Z]{3,9}) (H?\d{3}[A-Z0-9]*)(?:\s{1,3}(\S.*))?$", ln)
         if m and not ln.strip().endswith(".") and len(ln.strip()) < 60:
-            cur = {"id": f"{m[1]} {m[2]}", "title": m[3].strip(), "body": ""}
+            cur = {"id": f"{m[1]} {m[2]}", "title": (m[3] or "").strip(), "body": ""}
             blocks.append(cur)
         elif cur and ln.strip() and not ln.strip().startswith("INSTRUCTOR"):
             cur["body"] += " " + ln.strip()
@@ -175,13 +210,16 @@ def main():
         offered = o.get("offered")
         if offered is None:  # not in the offering plan: infer from which term's PDF listed it
             offered = "".join(t for t in "FS" if t in d.get("terms", ()))
+        if cid in LISTED_IN_BOTH:
+            offered = "FS"
         notes = d.get("prereqText", "")
         if not d:
-            notes = "Not in the F26/S27 course descriptions; prerequisites unknown."
+            fallback = "prerequisites are from its latest listing" if cid in PREREQS else "prerequisites unknown"
+            notes = NOTES.get(cid, f"Not in the F26/S27 course descriptions; {fallback}.")
         catalog[cid] = {
             "id": cid,
             "title": o.get("title") or d.get("title", ""),
-            "credits": int(d.get("credits") or o.get("credits") or 3),
+            "credits": CREDITS.get(cid) or int(d.get("credits") or o.get("credits") or 3),
             "offered": offered,
             "prereq": PREREQS.get(cid, ""),
             "notes": notes,

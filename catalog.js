@@ -28,7 +28,7 @@ window.CATALOG = [
   "id": "CICS 127",
   "title": "Introduction to Public Interest Technology",
   "credits": 4,
-  "offered": "S",
+  "offered": "FS",
   "prereq": "",
   "notes": ""
  },
@@ -59,7 +59,7 @@ window.CATALOG = [
  {
   "id": "CICS 208",
   "title": "Defending Democracy in a Digital World",
-  "credits": 3,
+  "credits": 4,
   "offered": "F",
   "prereq": "",
   "notes": ""
@@ -124,9 +124,9 @@ window.CATALOG = [
   "id": "CICS 590P",
   "title": "Technology Policy and Innovation to Serve the Common Good",
   "credits": 3,
-  "offered": "F",
-  "prereq": "",
-  "notes": "Not in the F26/S27 course descriptions; prerequisites unknown."
+  "offered": "FS",
+  "prereq": "CICS 305",
+  "notes": "Not in the F26/S27 course descriptions; prerequisites are from its latest listing."
  },
  {
   "id": "COMPSCI 119",
@@ -141,7 +141,7 @@ window.CATALOG = [
   "title": "Practicum - Introduction to the C Programming Language",
   "credits": 1,
   "offered": "FS",
-  "prereq": "CICS 160",
+  "prereq": "CICS 160 | CICS 210",
   "notes": "Prerequisite: CICS 160 (previously INFO 190T or COMPSCI 186 or CICS 210) with a grade of C or better, or COMPSCI 121 with a grade of B or better."
  },
  {
@@ -165,7 +165,7 @@ window.CATALOG = [
   "title": "Reasoning Under Uncertainty",
   "credits": 4,
   "offered": "FS",
-  "prereq": "CICS 160 & MATH 132",
+  "prereq": "(CICS 160 | CICS 210) & MATH 132",
   "notes": "Prerequisite: CICS 160 (previously INFO 190T or COMPSCI 187) or CICS 210 and MATH 132, all with a grade of C or better."
  },
  {
@@ -173,7 +173,7 @@ window.CATALOG = [
   "title": "Introduction to Computation",
   "credits": 4,
   "offered": "FS",
-  "prereq": "CICS 160 & MATH 132",
+  "prereq": "(CICS 160 | CICS 210) & MATH 132",
   "notes": "Prerequisite: CICS 160 (previously INFO 190T or COMPSCI 187 or E&C-ENG 241, or CICS 210) and MATH 132, all with a grade of C or better."
  },
  {
@@ -252,7 +252,7 @@ window.CATALOG = [
   "id": "COMPSCI 360",
   "title": "Introduction to Computer and Network Security",
   "credits": 3,
-  "offered": "F",
+  "offered": "FS",
   "prereq": "COMPSCI 230",
   "notes": "Prerequisite: COMPSCI 230 with a grade of C or better."
  },
@@ -269,8 +269,8 @@ window.CATALOG = [
   "title": "Digital Forensics",
   "credits": 3,
   "offered": "F",
-  "prereq": "",
-  "notes": "Not in the F26/S27 course descriptions; prerequisites unknown."
+  "prereq": "COMPSCI 230",
+  "notes": "Not in the F26/S27 course descriptions; prerequisites are from its latest listing."
  },
  {
   "id": "COMPSCI 367",
@@ -285,16 +285,16 @@ window.CATALOG = [
   "title": "Introduction to Computer Vision",
   "credits": 3,
   "offered": "S",
-  "prereq": "",
-  "notes": "Not in the F26/S27 course descriptions; prerequisites unknown."
+  "prereq": "COMPSCI 240 | COMPSCI 383",
+  "notes": "Prerequisite: COMPSCI 240 or 383 with a grade of C or better."
  },
  {
   "id": "COMPSCI 373",
   "title": "Introduction to Computer Graphics",
   "credits": 3,
   "offered": "S",
-  "prereq": "",
-  "notes": "Not in the F26/S27 course descriptions; prerequisites unknown."
+  "prereq": "CICS 210 & (MATH 235 | INFO 150 | COMPSCI 240)",
+  "notes": "Not in the F26/S27 course descriptions; prerequisites are from its latest listing."
  },
  {
   "id": "COMPSCI 377",
@@ -316,7 +316,7 @@ window.CATALOG = [
   "id": "COMPSCI 389",
   "title": "Introduction to Machine Learning",
   "credits": 3,
-  "offered": "S",
+  "offered": "FS",
   "prereq": "CICS 210 & (COMPSCI 240 | STATISTC 315 | STATISTC 240) & MATH 132",
   "notes": "Prerequisite: a grade of C or better in CICS 210 and COMPSCI 240 (or STATISTC 315 or STATISTC 240 or PSYCH 240 or OIM 240 or RES-ECON 212 or SOCIOL 212), and MATH 132."
  },
@@ -325,16 +325,16 @@ window.CATALOG = [
   "title": "Introduction to Robotics: Perception, Mechanics, Dynamics, and Control",
   "credits": 3,
   "offered": "S",
-  "prereq": "",
-  "notes": "Not in the F26/S27 course descriptions; prerequisites unknown."
+  "prereq": "MATH 235 & (COMPSCI 220 | COMPSCI 230)",
+  "notes": "Not in the F26/S27 course descriptions; prerequisites are from its latest listing."
  },
  {
   "id": "COMPSCI 410",
   "title": "Compiler Techniques",
   "credits": 3,
   "offered": "F-even",
-  "prereq": "",
-  "notes": "Not in the F26/S27 course descriptions; prerequisites unknown."
+  "prereq": "COMPSCI 230 & (COMPSCI 250 | MATH 455)",
+  "notes": "Not in the F26/S27 course descriptions; prerequisites are from its latest listing."
  },
  {
   "id": "COMPSCI 412",
@@ -349,14 +349,14 @@ window.CATALOG = [
   "title": "Software Entrepreneurship",
   "credits": 3,
   "offered": "FS",
-  "prereq": "COMPSCI 320 | COMPSCI 326",
+  "prereq": "COMPSCI 320 | COMPSCI 325 | COMPSCI 326",
   "notes": "Prerequisite: COMPSCi 320 (or COMPSCI 326) with a grade of C or better."
  },
  {
   "id": "COMPSCI 426",
   "title": "Scalable Web Systems",
   "credits": 3,
-  "offered": "F",
+  "offered": "FS",
   "prereq": "COMPSCI 320 | COMPSCI 326",
   "notes": "Prerequisite: COMPSCI 320 or COMPSCI 326 with a grade of C or better."
  },
@@ -365,7 +365,7 @@ window.CATALOG = [
   "title": "Software Engineering Project Management",
   "credits": 3,
   "offered": "FS",
-  "prereq": "",
+  "prereq": "COMPSCI 320",
   "notes": ""
  },
  {
@@ -412,7 +412,7 @@ window.CATALOG = [
   "id": "COMPSCI 485",
   "title": "Applications of Natural Language Processing",
   "credits": 3,
-  "offered": "F",
+  "offered": "FS",
   "prereq": "(COMPSCI 220 & COMPSCI 240) | LINGUIST 429B",
   "notes": "Prerequisite: COMPSCI 220 and COMPSCI 240 with a grade of C or better, or LINGUIST 429B (previously LINGUIST 492B) with a grade of C or better."
  },
@@ -453,7 +453,7 @@ window.CATALOG = [
   "title": "Ethical Considerations in Data Science and AI",
   "credits": 3,
   "offered": "S",
-  "prereq": "",
+  "prereq": "CICS 305",
   "notes": ""
  },
  {
@@ -461,8 +461,8 @@ window.CATALOG = [
   "title": "Logic in Computer Science",
   "credits": 3,
   "offered": "F-odd",
-  "prereq": "",
-  "notes": "Not in the F26/S27 course descriptions; prerequisites unknown."
+  "prereq": "COMPSCI 250 & COMPSCI 311",
+  "notes": "Not in the F26/S27 course descriptions; prerequisites are from its latest listing."
  },
  {
   "id": "COMPSCI 514",
@@ -493,16 +493,16 @@ window.CATALOG = [
   "title": "Health Informatics and Data Science",
   "credits": 3,
   "offered": "F",
-  "prereq": "",
-  "notes": "Not in the F26/S27 course descriptions; prerequisites unknown."
+  "prereq": "COMPSCI 240 | STATISTC 315",
+  "notes": "Not in the F26/S27 course descriptions; prerequisites are from its latest listing."
  },
  {
   "id": "COMPSCI 528",
   "title": "Mobile and Ubiquitous Computing",
   "credits": 3,
   "offered": "S",
-  "prereq": "",
-  "notes": "Not in the F26/S27 course descriptions; prerequisites unknown."
+  "prereq": "COMPSCI 230 & COMPSCI 240",
+  "notes": "Not in the F26/S27 course descriptions; prerequisites are from its latest listing."
  },
  {
   "id": "COMPSCI 532",
@@ -525,14 +525,14 @@ window.CATALOG = [
   "title": "Applied Information Retrieval",
   "credits": 3,
   "offered": "S",
-  "prereq": "",
-  "notes": "Not in the F26/S27 course descriptions; prerequisites unknown."
+  "prereq": "(COMPSCI 320 | COMPSCI 326) & (COMPSCI 383 | COMPSCI 389 | COMPSCI 446 | COMPSCI 485)",
+  "notes": "Not in the F26/S27 course descriptions; prerequisites are from its latest listing."
  },
  {
   "id": "COMPSCI 550",
   "title": "Introduction to Simulation",
   "credits": 3,
-  "offered": "S",
+  "offered": "FS",
   "prereq": "CICS 210 & STATISTC 315",
   "notes": "Prerequisites: CICS 210 (or COMPSCI 187) and STATISTC 315 (previously STATISTC 515)."
  },
@@ -549,8 +549,8 @@ window.CATALOG = [
   "title": "Introduction to Computer and Network Security",
   "credits": 3,
   "offered": "F",
-  "prereq": "",
-  "notes": "Not in the F26/S27 course descriptions; prerequisites unknown."
+  "prereq": "COMPSCI 453 | E&C-ENG 374",
+  "notes": "Not in the F26/S27 course descriptions; prerequisites are from its latest listing."
  },
  {
   "id": "COMPSCI 561",
@@ -580,7 +580,7 @@ window.CATALOG = [
   "id": "COMPSCI 565",
   "title": "Advanced Digital Forensic Systems",
   "credits": 3,
-  "offered": "S",
+  "offered": "FS",
   "prereq": "COMPSCI 365 | COMPSCI 377",
   "notes": "Prerequisite: COMPSCI 365 or COMPSCI 377 with a grade of C or better."
  },
@@ -597,8 +597,8 @@ window.CATALOG = [
   "title": "Intelligent Visual Computing",
   "credits": 3,
   "offered": "S",
-  "prereq": "",
-  "notes": "Not in the F26/S27 course descriptions; prerequisites unknown."
+  "prereq": "COMPSCI 311 & COMPSCI 383 & COMPSCI 373",
+  "notes": "Not in the F26/S27 course descriptions; prerequisites are from its latest listing."
  },
  {
   "id": "COMPSCI 575",
@@ -613,16 +613,16 @@ window.CATALOG = [
   "title": "Game Programming",
   "credits": 3,
   "offered": "F",
-  "prereq": "",
-  "notes": "Not in the F26/S27 course descriptions; prerequisites unknown."
+  "prereq": "COMPSCI 220 & MATH 235 & (COMPSCI 311 | COMPSCI 250)",
+  "notes": "Not in the F26/S27 course descriptions; prerequisites are from its latest listing."
  },
  {
   "id": "COMPSCI 578",
   "title": "Distributed Computing and Systems",
   "credits": 3,
   "offered": "F-odd",
-  "prereq": "",
-  "notes": "Not in the F26/S27 course descriptions; prerequisites unknown."
+  "prereq": "COMPSCI 377",
+  "notes": "Not in the F26/S27 course descriptions; prerequisites are from its latest listing."
  },
  {
   "id": "COMPSCI 589",
@@ -637,8 +637,8 @@ window.CATALOG = [
   "title": "Quantum Cryptography",
   "credits": 3,
   "offered": "S",
-  "prereq": "",
-  "notes": "Not in the F26/S27 course descriptions; prerequisites unknown."
+  "prereq": "COMPSCI 412 | COMPSCI 590Q | COMPSCI 590QC | E&C-ENG 550 | PHYSICS 537",
+  "notes": "Not in the F26/S27 course descriptions; prerequisites are from its latest listing."
  },
  {
   "id": "COMPSCI 590AF",
@@ -653,7 +653,7 @@ window.CATALOG = [
   "title": "Making Predictions",
   "credits": 3,
   "offered": "S",
-  "prereq": "",
+  "prereq": "COMPSCI 383",
   "notes": ""
  },
  {
@@ -669,7 +669,7 @@ window.CATALOG = [
   "title": "Applied Numerical Optimization",
   "credits": 3,
   "offered": "F-even",
-  "prereq": "",
+  "prereq": "COMPSCI 240 & MATH 235 & MATH 233",
   "notes": ""
  },
  {
@@ -709,8 +709,8 @@ window.CATALOG = [
   "title": "Seminar - Neural Networks: Neuroscience and Engineering",
   "credits": 3,
   "offered": "S",
-  "prereq": "",
-  "notes": "Not in the F26/S27 course descriptions; prerequisites unknown."
+  "prereq": "COMPSCI 311",
+  "notes": "Not in the F26/S27 course descriptions; prerequisites are from its latest listing."
  },
  {
   "id": "COMPSCI 601",
@@ -724,7 +724,7 @@ window.CATALOG = [
   "id": "COMPSCI 602",
   "title": "Research Methods in Empirical Computer Science",
   "credits": 3,
-  "offered": "F",
+  "offered": "FS",
   "prereq": "",
   "notes": ""
  },
@@ -869,8 +869,8 @@ window.CATALOG = [
   "title": "Computer Networking",
   "credits": 3,
   "offered": "F-even",
-  "prereq": "",
-  "notes": "Not in the F26/S27 course descriptions; prerequisites unknown."
+  "prereq": "COMPSCI 453 & COMPSCI 311",
+  "notes": "Not in the F26/S27 course descriptions; prerequisites are from its latest listing."
  },
  {
   "id": "COMPSCI 654",
@@ -948,7 +948,7 @@ window.CATALOG = [
   "id": "COMPSCI 682",
   "title": "Neural Networks: A Modern Introduction",
   "credits": 3,
-  "offered": "F",
+  "offered": "FS",
   "prereq": "",
   "notes": ""
  },
@@ -1236,7 +1236,7 @@ window.CATALOG = [
   "id": "INFO 348",
   "title": "Data Analytics with Python",
   "credits": 3,
-  "offered": "F",
+  "offered": "FS",
   "prereq": "INFO 248 & CICS 160",
   "notes": "Prerequisite: INFO 248 and CICS 160 (or INFO 190T or COMPSCI 186 or 187), both with a grade of C or better."
  },
@@ -1244,9 +1244,9 @@ window.CATALOG = [
   "id": "INFO 390C",
   "title": "Introduction to Computational Biology and Bioinformatics",
   "credits": 3,
-  "offered": "S",
-  "prereq": "",
-  "notes": "Not in the F26/S27 course descriptions; prerequisites unknown."
+  "offered": "FS",
+  "prereq": "INFO 248 | (CICS 210 & COMPSCI 240)",
+  "notes": "Not in the F26/S27 course descriptions; prerequisites are from its latest listing."
  },
  {
   "id": "INFO 494PI",
@@ -1254,7 +1254,7 @@ window.CATALOG = [
   "credits": 4,
   "offered": "S",
   "prereq": "(INFO 248 | COMPSCI 240) & CICS 210",
-  "notes": "Prerequisite: INFO 248 (or COMPSCI 240) and CICS 210 (or COMPSCI 186 or COMPSCI 187)all with a grade of C or better."
+  "notes": "Prerequisite: INFO 248 (or COMPSCI 240) and CICS 210 (or COMPSCI 186 or COMPSCI 187) all with a grade of C or better."
  },
  {
   "id": "MATH 131",
