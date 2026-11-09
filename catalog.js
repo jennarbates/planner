@@ -124,7 +124,7 @@ window.CATALOG = [
   "id": "CICS 590P",
   "title": "Technology Policy and Innovation to Serve the Common Good",
   "credits": 3,
-  "offered": "FS",
+  "offered": "F",
   "prereq": "CICS 305",
   "notes": "Not in the F26/S27 course descriptions; prerequisites are from its latest listing."
  },
@@ -532,7 +532,7 @@ window.CATALOG = [
   "id": "COMPSCI 550",
   "title": "Introduction to Simulation",
   "credits": 3,
-  "offered": "FS",
+  "offered": "S",
   "prereq": "CICS 210 & STATISTC 315",
   "notes": "Prerequisites: CICS 210 (or COMPSCI 187) and STATISTC 315 (previously STATISTC 515)."
  },
@@ -1244,7 +1244,7 @@ window.CATALOG = [
   "id": "INFO 390C",
   "title": "Introduction to Computational Biology and Bioinformatics",
   "credits": 3,
-  "offered": "FS",
+  "offered": "S",
   "prereq": "INFO 248 | (CICS 210 & COMPSCI 240)",
   "notes": "Not in the F26/S27 course descriptions; prerequisites are from its latest listing."
  },
