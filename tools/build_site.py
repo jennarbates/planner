@@ -97,8 +97,8 @@ for name in FILES:
                        '<a href="${esc(window.SOURCE_URLS[f])}" target="_blank" rel="noopener">${html ? "Web page" : "PDF"}</a>', name)
         text = replace(text, "Every file is saved in the <code>pdfs/</code> folder. <code>pdfs/SOURCES.md</code> lists where each one came from.",
                        "These links open the originals on the CICS site or in the Wayback Machine.", name)
-        text = replace(text, "Another ${experimentalTotal} experimental courses are kept separate.`",
-                       f"Another ${{experimentalTotal}} experimental courses are kept separate. {UNOFFICIAL}`", name)
+        text = replace(text, "Another ${separateTotal} experimental courses, seminars and practicums are kept separate.`",
+                       f"Another ${{separateTotal}} experimental courses, seminars and practicums are kept separate. {UNOFFICIAL}`", name)
     if name == "history-data.js":
         urls = source_urls()
         data = json.loads(text.split("=", 1)[1].rstrip().rstrip(";"))

@@ -65,13 +65,20 @@ function isGone(c) {
   return !listedTerms(c).some(t => TERM_IDS.indexOf(t) >= TERM_IDS.indexOf(tail[0])) && r.some(t => c.offerings[t]);
 }
 
-// A letter in the number marks an experimental course. The latest number decides, so a
-// course that became permanent counts as regular for all of its terms.
-const isExperimental = c => /\d[A-Z]/.test(c.id);
+// A letter in the number marks a course outside the regular catalog, and the last two digits say
+// which kind (CICS's titles for these courses agree): 90 or 97 is a topics course, which is how
+// courses are tried out before they get a permanent number, and 91, 92, 96 or 98 is a seminar,
+// independent study or practicum. The latest number decides, so a course that got a plain number
+// counts as regular for all of its terms.
+const TOPICS_NUMBER = /\d(90|97)[A-Z]+$/;
+const SEMINAR_NUMBER = /\d(91|92|96|98)[A-Z]+$/;
+const kindOf = code => TOPICS_NUMBER.test(code) ? "experimental" : SEMINAR_NUMBER.test(code) ? "seminar" : "regular";
+const isRegular = c => kindOf(c.id) === "regular";
+const KIND_LABEL = { experimental: "Experimental", seminar: "Seminar, practicum or independent study" };
 
 function matchesCategory(c) {
   if (state.category === "all") return true;
-  return isExperimental(c) === (state.category === "experimental");
+  return kindOf(c.id) === state.category;
 }
 
 function matchesFilters(c) {
@@ -124,8 +131,8 @@ function renderStats() {
   const r = rangeTerms();
   const first = base.filter(c => c.offerings[r[0]]).length;
   const last = base.filter(c => c.offerings[r[r.length - 1]]).length;
-  const experimental = COURSES.filter(c => isExperimental(c) && matchesOtherFilters(c) && rangeTerms().some(t => c.offerings[t])).length;
-  const experimentalNote = { regular: "Experimental courses, kept out of these numbers", experimental: "Experimental courses", all: "Experimental courses, included here" }[state.category];
+  const separate = COURSES.filter(c => !isRegular(c) && matchesOtherFilters(c) && rangeTerms().some(t => c.offerings[t])).length;
+  const separateNote = { regular: "Experimental courses, seminars and practicums, kept out of these numbers", all: "Experimental courses, seminars and practicums, included here" }[state.category] ?? "Experimental courses, seminars and practicums";
   const tiles = [
     { stat: "listed", show: "", n: `${first} → ${last}`, l: `Courses listed, ${TERM_LABEL[r[0]]} → ${TERM_LABEL[r[r.length - 1]]}` },
     { stat: "new", show: "new", n: base.filter(isNew).length, l: `New since ${TERM_LABEL[r[1] ?? r[0]]}` },
@@ -133,7 +140,7 @@ function renderStats() {
     { stat: "prereq", show: "prereq", n: base.filter(c => matchesShow(c, "prereq")).length, l: "Courses whose prerequisites changed" },
     { stat: "number", show: "number", n: base.filter(c => matchesShow(c, "number")).length, l: "Courses renumbered" },
     { stat: "rewrite", show: "rewrite", n: base.filter(c => matchesShow(c, "rewrite")).length, l: "Descriptions rewritten" },
-    { stat: "experimental", show: "", n: experimental, l: experimentalNote },
+    { stat: "separate", show: "", n: separate, l: separateNote },
   ];
   $("#h-stats").innerHTML = tiles.map(t => `<button type="button" class="stat" data-stat="${t.stat}" data-show="${t.show}" aria-expanded="${state.stat === t.stat}" aria-controls="h-drill">
       <span class="n">${esc(t.n)}</span><span class="l">${esc(t.l)}</span><span class="more">${state.stat === t.stat ? "Hide list" : "View list"}</span></button>`).join("");
@@ -184,15 +191,15 @@ function drillContent(stat) {
     return barContent(kind, term);
   }
   if (stat.startsWith("flow:")) return flowContent(stat.slice(5));
-  if (stat === "experimental") {
+  if (stat === "separate") {
     const listedHere = c => listedTerms(c).filter(inRange);
     return {
-      title: "Experimental courses",
-      note: "Courses whose latest number has a letter in it, such as topics courses, seminars and practicums. Most listed first.",
-      cols: ["Course", "Title", "Times listed", "Last listed"],
-      rows: COURSES.filter(c => isExperimental(c) && matchesOtherFilters(c) && listedHere(c).length)
+      title: "Experimental courses, seminars and practicums",
+      note: "Courses whose latest number has a letter after it. Numbers ending in 90 or 97 are topics courses, counted as experimental. Those ending in 91, 92, 96 or 98 are seminars, independent studies and practicums. Most listed first.",
+      cols: ["Course", "Title", "Kind", "Times listed", "Last listed"],
+      rows: COURSES.filter(c => !isRegular(c) && matchesOtherFilters(c) && listedHere(c).length)
         .sort((x, y) => listedHere(y).length - listedHere(x).length)
-        .map(c => ({ key: c.key, term: listedHere(c).at(-1), cells: [...courseCells(c), String(listedHere(c).length), esc(TERM_LABEL[listedHere(c).at(-1)])] })),
+        .map(c => ({ key: c.key, term: listedHere(c).at(-1), cells: [...courseCells(c), esc(KIND_LABEL[kindOf(c.id)]), String(listedHere(c).length), esc(TERM_LABEL[listedHere(c).at(-1)])] })),
     };
   }
   const base = COURSES.filter(matchesBase);
@@ -353,7 +360,6 @@ function renderCharts() {
 
 /* Where experimental courses ended up */
 
-const hasLetter = code => /\d[A-Z]/.test(code);
 const FLOW = {
   permanent: { label: "Became permanent", main: true },
   running: { label: "Still running as experimental" },
@@ -362,8 +368,8 @@ const FLOW = {
 
 function flowOutcome(c) {
   const list = listedTerms(c);
-  if (!list.some(t => hasLetter(c.offerings[t].code))) return null;
-  if (!hasLetter(c.id)) return "permanent";
+  if (!list.some(t => TOPICS_NUMBER.test(c.offerings[t].code))) return null;
+  if (!TOPICS_NUMBER.test(c.id)) return "permanent";
   const recent = TERM_IDS.slice(-2);
   return list.some(t => recent.includes(t)) ? "running" : "gone";
 }
@@ -374,7 +380,7 @@ function flowChart() {
   const pool = flowPool();
   const counts = Object.fromEntries(Object.keys(FLOW).map(k => [k, pool.filter(c => flowOutcome(c) === k).length]));
   const total = pool.length;
-  const head = `<h3>Where experimental courses ended up</h3><p>${plural(total, "course")} had a letter in the number at some point. Click a group to list its courses. The Category filter doesn't apply here.</p>`;
+  const head = `<h3>Where experimental courses ended up</h3><p>${plural(total, "course")} had a topics number, such as COMPSCI 590X, at some point. Click a group to list its courses. The Category filter doesn't apply here.</p>`;
   if (!total) return `<figure class="chart wide" style="margin:0">${head}</figure>`;
 
   const W = Math.max(320, ($("#h-charts").clientWidth || 900) - 36);
@@ -413,7 +419,7 @@ function flowContent(kind) {
   const times = c => listedTerms(c).length;
   const last = c => TERM_LABEL[listedTerms(c).at(-1)];
   if (kind === "permanent") {
-    const turned = c => listedTerms(c).find(t => !hasLetter(c.offerings[t].code));
+    const turned = c => listedTerms(c).find(t => !TOPICS_NUMBER.test(c.offerings[t].code));
     return {
       title: "Experimental courses that became permanent",
       note: "They count as regular courses everywhere else on this page, for all of their terms.",
@@ -425,7 +431,7 @@ function flowContent(kind) {
   }
   return {
     title: kind === "running" ? "Experimental courses still running" : "Experimental courses no longer listed",
-    note: kind === "running" ? "Listed in the last two terms with a letter in the number. Most listed first." : "Not listed in the last two terms, most recent first. Some topics and seminars may return.",
+    note: kind === "running" ? "Listed in the last two terms with a topics number. Most listed first." : "Not listed in the last two terms, most recent first. Some topics and seminars may return.",
     cols: ["Course", "Title", "Times listed", "Last listed"],
     rows: rows.sort(kind === "running"
       ? (x, y) => times(y) - times(x)
@@ -786,7 +792,7 @@ function renderDetail() {
   const tab = (mode, text) => `<button type="button" class="tab" data-mode="${mode}" aria-pressed="${state.mode === mode}">${text}</button>`;
 
   el.innerHTML = `${currentBar(c, status)}
-    <div class="facts">${isExperimental(c) ? `<span class="badge old">Experimental</span> ` : ""}Listed in ${list.length} of ${TERM_IDS.length} terms${c.formerly.length ? ` · formerly ${esc(c.formerly.join(", "))}` : ""} · <a href="map.html#${encodeURIComponent(c.key)}">see on the prerequisite map</a></div>
+    <div class="facts">${isRegular(c) ? "" : `<span class="badge old">${esc(KIND_LABEL[kindOf(c.id)])}</span> `}Listed in ${list.length} of ${TERM_IDS.length} terms${c.formerly.length ? ` · formerly ${esc(c.formerly.join(", "))}` : ""} · <a href="map.html#${encodeURIComponent(c.key)}">see on the prerequisite map</a></div>
     ${becomes}
     ${currentSection(c, status)}
     ${whatChangedWhen(c)}
@@ -828,7 +834,7 @@ function renderSources() {
       <li>Fall 2022 to Fall 2023, and the Spring 2024 SPIRE document, are archived copies from the Wayback Machine. Each is the document as last captured, so some predate the end of registration for that term.</li>
       <li>A prerequisite counts as changed when the courses or minimum grades named in SPIRE differ, or when the course is on CICS's approved-changes list. A course's old and new numbers count as one course, so a renumbering alone isn't a change. A difference only in the catalog's wording counts as wording.</li>
       <li>Topic numbers that were reused for an unrelated course appear as separate rows. Renumbered courses share a row when CICS lists the change. Four pairs missing from those lists also share a row, each with its reason shown in the course's changes: three because SPIRE's notes give the previous number, and one because its title and description match.</li>
-      <li>Courses whose latest number has a letter, such as COMPSCI 590X, are treated as experimental and kept out of the numbers unless you choose them under Category. A course that later got a plain number counts as regular for all of its terms, including those under its old number.</li>
+      <li>Courses whose latest number has a letter after it are kept out of the numbers unless you choose them under Category. Numbers ending in 90 or 97, such as COMPSCI 590X, are topics courses and count as experimental. Those ending in 91, 92, 96 or 98 are seminars, independent studies and practicums. A lettered number ending in anything else, such as INFO 494PI or COMPSCI 701Y, counts as regular. A course that later got a plain number counts as regular for all of its terms, including those under its old number.</li>
       <li>This page compares what CICS published. A course missing from a listing may still have run, and honors colloquia are left out.</li>
     </ul>`;
 }
@@ -1019,8 +1025,8 @@ function applyHash() {
 }
 window.addEventListener("hashchange", () => { applyHash(); renderAll(); });
 
-const experimentalTotal = COURSES.filter(isExperimental).length;
-$("#h-sub").textContent = `What changed in ${COURSES.length - experimentalTotal} regular CICS, COMPSCI and INFO courses across ${TERMS.length} terms, ${TERMS[0].label} to ${TERMS[TERMS.length - 1].label}, from the college's published course descriptions, schedules and SPIRE registration documents. Another ${experimentalTotal} experimental courses are kept separate.`;
+const separateTotal = COURSES.filter(c => !isRegular(c)).length;
+$("#h-sub").textContent = `What changed in ${COURSES.length - separateTotal} regular CICS, COMPSCI and INFO courses across ${TERMS.length} terms, ${TERMS[0].label} to ${TERMS[TERMS.length - 1].label}, from the college's published course descriptions, schedules and SPIRE registration documents. Another ${separateTotal} experimental courses, seminars and practicums are kept separate.`;
 applyHash();
 renderAll();
 renderSources();

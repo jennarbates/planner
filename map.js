@@ -12,7 +12,9 @@ const NODE_W = 172, NODE_H = 42, GAP_Y = 8, COL_W = 232, PAD_X = 18, HEAD_H = 28
 const $ = sel => document.querySelector(sel);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => `&#${c.charCodeAt(0)};`);
 const plural = (n, word) => `${n} ${word}${n === 1 ? "" : "s"}`;
-const isExperimental = c => /\d[A-Z]/.test(c.id);
+// Same rule as the course history page: experimental courses (topics numbers ending in 90 or 97)
+// and seminars, independent studies and practicums (91, 92, 96 or 98) aren't regular courses.
+const isRegular = c => !/\d(90|97|91|92|96|98)[A-Z]+$/.test(c.id);
 
 const state = {
   term: TERM_IDS.length - 1,
@@ -53,11 +55,11 @@ const CORE_MIN_NAMED_BY = 2;
 const CORE = (() => {
   const namedBy = new Map();
   for (const c of COURSES) {
-    if (isExperimental(c)) continue;
+    if (!isRegular(c)) continue;
     const names = new Set(Object.values(c.offerings).flatMap(o => o.needs ?? []));
     names.forEach(n => namedBy.set(n, (namedBy.get(n) ?? 0) + 1));
   }
-  return new Set(COURSES.filter(c => c.level < 500 && !isExperimental(c) && (namedBy.get(c.key) ?? 0) >= CORE_MIN_NAMED_BY).map(c => c.key));
+  return new Set(COURSES.filter(c => c.level < 500 && isRegular(c) && (namedBy.get(c.key) ?? 0) >= CORE_MIN_NAMED_BY).map(c => c.key));
 })();
 
 function inScope(c) {
@@ -97,14 +99,14 @@ function offeringAt(c, i) {
 /* Which courses can appear with these settings. Fixed across terms so boxes don't move. */
 
 function shownCourses() {
-  const regular = COURSES.filter(c => inScope(c) && !isExperimental(c));
+  const regular = COURSES.filter(c => inScope(c) && isRegular(c));
   return state.exp === "all" ? COURSES.filter(inScope) : regular;
 }
 
 function edgeVisible(need) {
   const c = BY_KEY.get(need);
   if (!c) return outsideVisible(need);
-  if (state.scope === "core") return CORE.has(need) || isExperimental(c);
+  if (state.scope === "core") return CORE.has(need) || !isRegular(c);
   return true; // a course named from outside the chosen levels is still part of the picture
 }
 
@@ -279,7 +281,7 @@ function renderCourseBoard() {
 
   const box = (item, x, y) => {
     const c = BY_KEY.get(item.key);
-    return `<div class="m-node big st-${item.status} ${isExperimental(c) ? "exp" : ""}" data-key="${esc(item.key)}" tabindex="0" role="button"
+    return `<div class="m-node big st-${item.status} ${isRegular(c) ? "" : "exp"}" data-key="${esc(item.key)}" tabindex="0" role="button"
       style="left:${x}px;top:${y}px;width:${W}px;height:${H}px" title="Go to ${esc(c.id)}: ${esc(c.title)}">
       <span class="code">${esc(c.id)}${tagText[item.status] ? ` <span class="tag ${item.status}">${tagText[item.status]}</span>` : ""}</span>
       <span class="title">${esc(c.title)}</span></div>`;
@@ -320,7 +322,7 @@ function renderCourseBoard() {
     </div>
     <svg width="${width}" height="${TOP + height + 16}" aria-hidden="true">${ARROW_DEFS}${paths.join("")}</svg>
     ${parts.join("")}
-    <div class="m-node big current ${isExperimental(c) ? "exp" : ""}" style="left:${center.x}px;top:${center.y}px;width:${W}px;height:${H}px" title="${esc(c.id)}: ${esc(c.title)}">
+    <div class="m-node big current ${isRegular(c) ? "" : "exp"}" style="left:${center.x}px;top:${center.y}px;width:${W}px;height:${H}px" title="${esc(c.id)}: ${esc(c.title)}">
       <span class="code">${esc(c.id)}</span><span class="title">${esc(c.title)}</span></div>`;
 }
 
@@ -353,7 +355,7 @@ function renderBoard(edges) {
   const nodes = [...layout.points].map(([k, p]) => {
     const c = BY_KEY.get(k);
     const cls = [
-      c ? (isExperimental(c) ? "exp" : "") : "ext",
+      c ? (isRegular(c) ? "" : "exp") : "ext",
       c && !isActive(c, state.term) && !connected.has(k) ? "off" : "",
       !c && !connected.has(k) ? "off" : "",
       chain && !chain.has(k) ? "dim" : "",
@@ -493,13 +495,13 @@ function renderLegend() {
     const b = baseIndex();
     $("#m-legend").innerHTML = `<span>Click any course to move to it. An arrow may be a requirement or one option of several, so check the wording above.</span>
       ${compare ? `<span class="key"><span class="ln added"></span>Added since ${esc(TERM_LABEL[TERM_IDS[b]])}</span><span class="key"><span class="ln dropped"></span>Dropped since ${esc(TERM_LABEL[TERM_IDS[b]])}</span>` : ""}
-      <span class="key"><span class="bx exp"></span>Experimental</span>`;
+      <span class="key"><span class="bx exp"></span>Experimental or seminar</span>`;
     return;
   }
   $("#m-legend").innerHTML = `
     <span class="key"><span class="ln"></span>${compare ? "In both terms" : "Connection"}</span>
     ${compare ? `<span class="key"><span class="ln added"></span>Added</span><span class="key"><span class="ln dropped"></span>Dropped</span>` : ""}
-    <span class="key"><span class="bx exp"></span>Experimental</span>
+    <span class="key"><span class="bx exp"></span>Experimental or seminar</span>
     <span class="key"><span class="bx ext"></span>Not in CICS listings</span>
     <span>Click a course to light up its chain. Click it again to clear it.</span>`;
 }

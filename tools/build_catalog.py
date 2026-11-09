@@ -133,11 +133,13 @@ EXTRA = [
     ("GEOL 101", "Planet Earth", 4, "", ""),
 ]
 
-# The offering plan calls these one-season courses, but they were listed in the other season
-# at least twice in the last six terms (Spring 2025 to Spring 2027 in history-data.js).
+# The offering plan calls these one-season courses, but in the last six terms (Fall 2024 to
+# Spring 2027 in history-data.js) they were listed at least twice in the other season and at
+# least once in the plan's own. CICS 590P, COMPSCI 550 and INFO 390C were listed only in the
+# other season lately, so they keep the plan's season, which may record a move.
 LISTED_IN_BOTH = {
-    "CICS 127", "CICS 590P", "COMPSCI 360", "COMPSCI 389", "COMPSCI 426", "COMPSCI 485",
-    "COMPSCI 550", "COMPSCI 565", "COMPSCI 602", "COMPSCI 682", "INFO 348", "INFO 390C",
+    "CICS 127", "COMPSCI 360", "COMPSCI 389", "COMPSCI 426", "COMPSCI 485",
+    "COMPSCI 565", "COMPSCI 602", "COMPSCI 682", "INFO 348",
 }
 # The description text says 3, but every schedule since Fall 2023 says 4. The site uses the schedule's.
 CREDITS = {"CICS 208": 4}
