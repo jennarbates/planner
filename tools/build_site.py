@@ -87,13 +87,6 @@ for name in FILES:
     text = read(name)
     if name.endswith(".css"):
         text = theme_aware(text)
-    if name == "index.html":
-        # The published page gets its document skeleton from the viewer.
-        text = re.sub(r"<!DOCTYPE html>\s*<html[^>]*>\s*<head>\s*", "", text)
-        text = re.sub(r'\s*<meta charset="utf-8">\s*<meta name="viewport"[^>]*>', "", text)
-        text = re.sub(r"</head>\s*<body class=\"history\">", "", text)
-        text = replace(text, '<script src="history-data.js"></script>', '<script>document.body.classList.add("history");</script>\n  <script src="history-data.js"></script>', name)
-        text = re.sub(r"\s*</body>\s*</html>\s*$", "\n", text)
     if name == "map.html":
         text = replace(text, "which may be a requirement or one of several options.</p>",
                        f"which may be a requirement or one of several options. {UNOFFICIAL}</p>", name)
